@@ -1,0 +1,303 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-5);
+  background: var(--overlay);
+  /* Deep defocus, desaturating rather than boosting: the page behind a modal
+     should fall away into the dark, which is what gives the dialog its sense of
+     being physically in front. */
+  backdrop-filter: blur(16px) saturate(75%) brightness(0.7);
+  -webkit-backdrop-filter: blur(16px) saturate(75%) brightness(0.7);
+  animation: fade-in var(--dur-component) var(--ease-standard);
+}
+.overlay--drawer {
+  padding: 0;
+  justify-content: flex-end;
+}
+
+/* -------------------------------- Modal -------------------------------- */
+.modal {
+  width: 100%;
+  max-height: calc(100vh - var(--sp-8));
+  display: flex;
+  flex-direction: column;
+  /* Three layers: specular streak, glass tint, then a near-opaque base. The base
+     is load-bearing — the tint alone is far too transparent to read form labels
+     against, and a dialog is the last place to trade legibility for effect. */
+  background:
+    var(--glass-sheen),
+    var(--glass-bg-strong),
+    color-mix(in srgb, var(--surface-elevated) 90%, transparent);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  border: var(--border-thin) solid var(--glass-border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-panel-raised);
+  animation: scale-in var(--dur-component) var(--ease-liquid);
+}
+.modal--sm {
+  max-width: 420px;
+}
+.modal--md {
+  max-width: 560px;
+}
+.modal--lg {
+  max-width: 760px;
+}
+/* Matches the create/composer page measure (see composer.css). */
+.modal--xl {
+  max-width: 1000px;
+}
+/* Near-full-screen — room to preview sample generation videos in a gallery. */
+.modal--full {
+  max-width: min(1360px, 96vw);
+  max-height: calc(100vh - var(--sp-6));
+}
+.modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+}
+.modal__title {
+  font-size: var(--fs-section);
+}
+.modal__desc {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-support);
+  color: var(--text-secondary);
+}
+.modal__body {
+  padding: 0 var(--sp-5) var(--sp-5);
+  overflow-y: auto;
+}
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-top: var(--border-thin) solid var(--border-subtle);
+  /* Action bar sits a shade deeper than the dialog body, so the primary button
+     has its own ground to sit on. */
+  background: var(--well-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
+}
+
+/* -------------------------------- Drawer ------------------------------- */
+.drawer {
+  width: min(440px, 100vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background:
+    var(--glass-sheen),
+    var(--glass-bg-strong),
+    color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  border-left: var(--border-thin) solid var(--glass-border-strong);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    var(--shadow-3);
+  animation: drawer-in-right var(--dur-component) var(--ease-standard);
+}
+.drawer--left {
+  border-left: none;
+  border-right: var(--border-thin) solid var(--border-subtle);
+  animation-name: drawer-in-left;
+}
+@keyframes drawer-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes drawer-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+}
+.drawer__body {
+  flex: 1;
+  padding: var(--sp-5);
+  overflow-y: auto;
+}
+
+/* ----------------------------- MediaViewer ----------------------------- */
+.overlay--lightbox {
+  flex-direction: column;
+  padding: var(--sp-4);
+}
+.lightbox {
+  width: 100%;
+  max-width: min(1100px, 100%);
+  max-height: calc(100vh - var(--sp-7));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  animation: scale-in var(--dur-component) var(--ease-spring);
+}
+.lightbox__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.lightbox__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.lightbox__title {
+  font-size: var(--fs-section);
+  color: var(--text-primary);
+}
+.lightbox__sub {
+  font-size: var(--fs-support);
+  color: var(--text-secondary);
+}
+.lightbox__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: none;
+}
+.lightbox__stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox__media {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  /* Black backing, not --surface: a transparent PNG or a letterboxed clip should
+     fall away into the void rather than sit on a visible grey card. */
+  background: #000;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    var(--shadow-3),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ----------------------------- DropdownMenu ---------------------------- */
+.menu {
+  position: relative;
+  display: inline-flex;
+}
+.menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  min-width: 180px;
+  z-index: 50;
+  padding: var(--sp-1);
+  /* Glass, but over a near-opaque base — menu items must stay legible over busy
+     backgrounds like the home hero gradient. */
+  background:
+    var(--glass-bg-strong),
+    color-mix(in srgb, var(--surface-elevated) 93%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--border-thin) solid var(--glass-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--shadow-3);
+  animation: menu-in var(--dur-micro) var(--ease-standard);
+  transform-origin: top;
+}
+.menu__list--end {
+  right: 0;
+}
+.menu__list--start {
+  left: 0;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--fs-support);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+.menu__item:hover {
+  background: var(--veil-hover);
+  color: var(--text-primary);
+  box-shadow: var(--edge-light);
+}
+.menu__item.is-selected {
+  color: var(--accent-hover);
+  font-weight: var(--fw-medium);
+  background: var(--accent-soft);
+}
+.menu__item.is-selected:hover {
+  background: var(--accent-soft-strong);
+  color: var(--accent-hover);
+}
+.menu__item-check {
+  margin-left: auto;
+  color: var(--accent-hover);
+  flex: none;
+}
+.menu__item--danger {
+  color: var(--danger);
+}
+.menu__item--danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}

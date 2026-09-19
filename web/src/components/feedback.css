@@ -1,0 +1,185 @@
+/* ------------------------------ EmptyState ----------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-8) var(--sp-5);
+  text-align: center;
+  border: var(--border-thin) dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 80% at 50% -10%, var(--accent-soft), transparent 60%),
+    radial-gradient(
+      90% 70% at 100% 115%,
+      color-mix(in srgb, var(--accent-2) 6%, transparent),
+      transparent 60%
+    ),
+    var(--surface-gradient);
+  box-shadow:
+    var(--edge-light),
+    var(--shadow-1);
+}
+.empty-state--compact {
+  padding: var(--sp-6) var(--sp-4);
+  gap: var(--sp-3);
+}
+.empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+  box-shadow:
+    0 10px 28px -10px rgba(168, 85, 247, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.empty-state--compact .empty-state__icon {
+  width: 40px;
+  height: 40px;
+}
+.empty-state__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-width: 38ch;
+}
+.empty-state__text strong {
+  font-size: var(--fs-card);
+  color: var(--text-primary);
+}
+.empty-state__text span {
+  font-size: var(--fs-support);
+  color: var(--text-muted);
+}
+
+/* ------------------------------ ErrorState ----------------------------- */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-7) var(--sp-5);
+  text-align: center;
+  border: var(--border-thin) solid color-mix(in srgb, var(--danger) 26%, transparent);
+  border-radius: var(--radius-lg);
+  /* Tinted glass rather than a flat wash — an error panel still has to look like
+     it's made of the same material as everything around it. */
+  background: linear-gradient(
+    164deg,
+    var(--danger-soft),
+    color-mix(in srgb, var(--danger-soft) 35%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    var(--shadow-1);
+}
+.error-state--compact {
+  flex-direction: row;
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4);
+}
+.error-state__icon {
+  color: var(--danger);
+  display: inline-flex;
+}
+.error-state__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.error-state__text strong {
+  color: var(--text-primary);
+  font-size: var(--fs-support);
+}
+.error-state__text span {
+  color: var(--text-secondary);
+  font-size: var(--fs-meta);
+}
+.error-state--compact {
+  align-items: center;
+}
+.error-state--compact .error-state__text {
+  flex: 1;
+}
+
+/* --------------------------- InlineMessage ----------------------------- */
+.inline-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+.inline-message svg {
+  flex: none;
+  margin-top: 1px;
+}
+.inline-message--error {
+  color: var(--danger);
+}
+.inline-message--success {
+  color: var(--success);
+}
+.inline-message--info {
+  color: var(--info);
+}
+
+/* --------------------------------- Tabs -------------------------------- */
+/* Segmented control: a milled track holding one raised, lit segment. The track
+   is recessed and the active tab is the only thing in it that catches light. */
+.tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--well-bg);
+  backdrop-filter: var(--glass-blur-light);
+  -webkit-backdrop-filter: var(--glass-blur-light);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow:
+    var(--well-shadow),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+.tab:hover:not(.is-active) {
+  color: var(--text-primary);
+}
+/* The active segment is the only thing in the track that catches light: a violet
+   tint, a lit rim, and a contact shadow under it. Everything else in the groove
+   stays unlit, which is what makes the selection obvious at a glance. */
+.tab.is-active {
+  background: var(--accent-soft-strong);
+  color: var(--accent-hover);
+  box-shadow:
+    inset 0 0 0 1px var(--accent-line),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 2px 8px -2px rgba(0, 0, 0, 0.6),
+    0 0 20px -6px rgba(168, 85, 247, 0.3);
+}
+.tab__count {
+  font-size: var(--fs-meta);
+  padding: 0 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--veil-hover-strong);
+  color: var(--text-secondary);
+}

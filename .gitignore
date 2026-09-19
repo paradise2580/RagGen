@@ -1,0 +1,36 @@
+node_modules/
+.next/
+.env
+.env.local
+prisma/generated/
+tsconfig.tsbuildinfo
+*.log
+
+# Personal Claude Code settings (the memory-pass hook). The hook script itself
+# (.claude/hooks/) is committed; only this machine-local wiring is ignored.
+.claude/settings.local.json
+
+.rag-data/
+
+# Private runtime/configuration and generated artifacts
+.env.*
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+*.tsbuildinfo
+*.zip
+.rag-data/
+.next/
+web/node_modules/
+public/video-generator/assets/
+public/video-generator/index.html
+public/uploads/
+.vercel
+.env*

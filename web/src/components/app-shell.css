@@ -1,0 +1,661 @@
+/* ================================ App frame ============================ */
+/* The shell is a PADDED FRAME, not a full-bleed grid: the sidebar and topbar are
+   detached rounded panels floating inside it, with the ambient canvas wash visible
+   around and between them.
+
+   That gap is load-bearing. Glass only reads as glass when it has a visible edge and
+   something behind it — a panel butted flush to the viewport edge has neither, which is
+   why the previous flush layout looked like a flat admin template in every colourway.
+
+   --frame is the one spacing value the whole shell is built from: the outer padding, the
+   gap between rail and content, and the sticky offsets all derive from it, so the
+   rhythm cannot drift out of alignment the way three hard-coded values would. */
+.app-shell {
+  --frame: var(--sp-4);
+  --rail-h: calc(100vh - (var(--frame) * 2));
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  gap: var(--frame);
+  padding: var(--frame);
+  min-height: 100vh;
+  background: var(--canvas-gradient);
+  background-attachment: fixed;
+  transition: grid-template-columns var(--dur-component) var(--ease-standard);
+}
+.app-shell--collapsed {
+  grid-template-columns: var(--sidebar-w-collapsed) minmax(0, 1fr);
+}
+
+/* ------------------------------ Ambient backdrop ------------------------------ */
+/* Fixed to the viewport (not the grid), so it costs nothing on scroll and sits behind
+   the sidebar/topbar glass and the page content without affecting their layout. Kept
+   slow and low-contrast on purpose — this runs for the length of a work session, not
+   the few seconds of a landing page, so "comfortable" beats "eye-catching" here. */
+.app-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.app-ambient__aura {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  mix-blend-mode: screen;
+  opacity: 0.26;
+  will-change: transform;
+}
+.app-ambient__aura--1 {
+  top: -10%;
+  left: -6%;
+  width: 42vw;
+  height: 42vw;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.9), transparent 70%);
+  animation: app-aura-drift-a 42s ease-in-out infinite;
+}
+.app-ambient__aura--2 {
+  bottom: -14%;
+  right: -8%;
+  width: 38vw;
+  height: 38vw;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.85), transparent 70%);
+  animation: app-aura-drift-b 36s ease-in-out infinite;
+}
+.app-ambient__aura--3 {
+  top: 34%;
+  left: 42%;
+  width: 26vw;
+  height: 26vw;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.8), transparent 70%);
+  animation: app-aura-drift-c 50s ease-in-out infinite;
+}
+.app-ambient__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(65% 55% at 50% 0%, #000, transparent 75%);
+  opacity: 0.15;
+}
+@keyframes app-aura-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(3%, 4%, 0) scale(1.08); }
+}
+@keyframes app-aura-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-3%, -3%, 0) scale(1.1); }
+}
+@keyframes app-aura-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
+  50% { transform: translate3d(-4%, 5%, 0) scale(1.15); opacity: 1; }
+}
+
+/* -------------------------------- Sidebar ------------------------------ */
+/* Glass slab, full height. Chrome is one of the few places real backdrop blur is
+   allowed (see tokens.css), and it earns it here: the panel is fixed over the
+   ambient canvas wash, so the blur picks up the key light top-right and the
+   sidebar visibly changes tone down its own length. */
+.sidebar {
+  position: sticky;
+  top: var(--frame);
+  height: var(--rail-h);
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-3);
+  gap: var(--sp-3);
+  border: var(--border-thin) solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  /* Tint over a near-opaque base: a fully translucent rail lets scrolling content
+     smear through it, which reads as a bug rather than as glass. */
+  background:
+    var(--glass-bg),
+    color-mix(in srgb, var(--app-shell) 82%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-panel);
+  /* visible, not hidden: the collapse toggle and any popover must be able to cross
+     the rail's edge. The nav area below does its own scrolling. */
+  overflow: visible;
+}
+/* Brand row. No bottom border and no fixed 76px band: the rail is a rounded panel
+   now, so an internal full-width rule would cut it in half. Separation comes from
+   space instead, which is the quieter and more modern read. */
+.sidebar__top {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: var(--sp-1) var(--sp-2);
+}
+.sidebar__collapse {
+  margin-left: auto;
+  flex: none;
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--text-primary);
+}
+
+/* ---- Brand marks ----
+   <BrandMark> renders an inline <svg>; <BrandLockup> pairs it with the wordmark set
+   in the UI font. See components/Brand.tsx for why the wordmark is live text at these
+   sizes and the drawn lockup is reserved for the hero. */
+.brand-mark {
+  display: block;
+  flex: none;
+  /* The mark's own glass edge is a thin white stroke, so it must never be placed on a
+     surface that also glows: two specular treatments on one object fight. It sits
+     directly on the rail, with no chip or tile behind it. */
+}
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.brand-lockup__word {
+  font-size: var(--fs-card);
+  font-weight: var(--fw-semibold);
+  /* The wordmark is a name, not prose: tighten it and stop the ":)" from drifting. */
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+/* The drawn display lockup — landing hero and auth only, never chrome. */
+.brand-lockup-art {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+}
+.app-shell--collapsed .brand-lockup__word,
+.app-shell--collapsed .sidebar__link-label {
+  display: none;
+}
+.app-shell--collapsed .sidebar__top {
+  justify-content: center;
+}
+/* No padding of its own: the rail supplies it now. Padding here as well was double
+   inset — the nav sat 28px from the rail's left edge while the brand row sat at 20px,
+   which is exactly the kind of drift that reads as sloppy spacing. */
+.sidebar__nav-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Let the focus ring on the first/last link breathe without being clipped by the
+     scroll container. */
+  padding: 2px;
+  margin: 0 -2px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar__section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--sp-3);
+  border-top: var(--border-thin) solid var(--border-subtle);
+}
+.sidebar__section-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3);
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-hover);
+}
+.app-shell--collapsed .sidebar__section {
+  align-items: center;
+}
+.app-shell--collapsed .sidebar__section-label {
+  font-size: 0;
+  justify-content: center;
+  padding: 0;
+}
+.sidebar__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: 40px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+.sidebar__link-icon {
+  flex: none;
+}
+.sidebar__link:hover {
+  /* A wash of light, not --surface-hover: the sidebar is glass, so a hover state
+     has to lift the existing tint rather than paint an opaque swatch over it
+     (which would punch a flat rectangle through the blur). */
+  background: var(--veil-hover);
+  color: var(--text-primary);
+  box-shadow: var(--edge-light);
+}
+.sidebar__link.active {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  box-shadow:
+    inset 0 0 0 1px var(--accent-line),
+    var(--edge-light);
+}
+.sidebar__link.active .sidebar__link-icon {
+  color: var(--accent-hover);
+  /* Faint bloom off the active glyph — sells it as backlit. */
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.55));
+}
+.app-shell--collapsed .sidebar__link {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Primary-action nav item ("Create"): accent-gradient pill, like the old
+   New-generation button. Overrides the default + active link treatments. */
+.sidebar__link--highlight,
+.sidebar__link--highlight.active {
+  position: relative;
+  overflow: hidden;
+  color: var(--accent-contrast);
+  font-weight: var(--fw-semibold);
+  background: var(--accent-gradient);
+  /* One violet cast, offset — enough that the pill reads as lit and raised on a
+     dark canvas. Deliberately not a halo: see the one-cast rule in tokens.css. */
+  box-shadow:
+    0 8px 24px -8px rgba(168, 85, 247, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition:
+    box-shadow var(--dur-micro) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard),
+    filter var(--dur-micro) var(--ease-standard);
+}
+.sidebar__link--highlight .sidebar__link-icon,
+.sidebar__link--highlight.active .sidebar__link-icon {
+  color: var(--accent-contrast);
+}
+.sidebar__link--highlight::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+}
+.sidebar__link--highlight:hover {
+  filter: brightness(1.1);
+  background: var(--accent-gradient);
+  box-shadow:
+    0 12px 30px -8px rgba(168, 85, 247, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+.sidebar__link--highlight:hover::after {
+  animation: sheen 0.9s var(--ease-standard);
+}
+.sidebar__link--highlight:active {
+  transform: scale(0.98);
+}
+/* The active-state accent bar is for normal links; suppress it on the pill. */
+.sidebar__link--highlight.active::before {
+  content: none;
+}
+
+.sidebar__footer {
+  border-top: var(--border-thin) solid var(--border-subtle);
+  padding-top: var(--sp-3);
+}
+.sidebar__theme {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  height: 38px;
+  padding: 0 var(--sp-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+.sidebar__theme:hover {
+  background: var(--veil-hover);
+  color: var(--text-primary);
+  box-shadow: var(--edge-light);
+}
+.app-shell--collapsed .sidebar__theme {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar__scrim {
+  display: none;
+}
+
+
+/* -------------------------------- Topbar ------------------------------- */
+.main-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* Floating glass bar, matching the rail: same radius, same border, same blur, so the
+   two panels read as one material. Content scrolls under it, which is what gives the
+   blur something moving to refract — the most legible glass surface in the app.
+
+   Slimmer than the old 76px: that height only existed to line its bottom border up
+   with the sidebar's brand-band rule, and neither border exists any more. */
+.topbar {
+  position: sticky;
+  top: var(--frame);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  height: 56px;
+  flex: none;
+  margin: 0;
+  padding: 0 var(--sp-4);
+  border: var(--border-thin) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background:
+    var(--glass-bg),
+    color-mix(in srgb, var(--app-shell) 78%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  /* Catch-light along the top, then a soft cast down onto the scrolling content
+     so the bar clearly floats above the page rather than sitting in it. */
+  box-shadow:
+    var(--edge-light),
+    0 18px 36px -28px rgba(0, 0, 0, 0.9);
+}
+.topbar__start,
+.topbar__end {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.topbar__menu {
+  display: none;
+}
+
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--control-h);
+  padding: 0 var(--sp-2) 0 0;
+  border: var(--border-thin) solid transparent;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    border-color var(--dur-micro) var(--ease-standard);
+}
+.user-trigger:hover {
+  background: var(--veil-hover);
+  border-color: var(--glass-border);
+}
+.user-trigger--static {
+  cursor: default;
+}
+.user-trigger--static:hover {
+  background: transparent;
+}
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-bold);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 3px 12px -3px rgba(168, 85, 247, 0.65);
+}
+.user-trigger__email {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================ Home top-navbar shell =================== */
+.home-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--canvas-gradient);
+  background-attachment: fixed;
+}
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  height: var(--header-h);
+  padding: 0 var(--sp-5);
+  /* Same glass recipe as .topbar — the two shells must be indistinguishable
+     where a user crosses between them (Dashboard → Pricing). */
+  background:
+    var(--glass-bg),
+    color-mix(in srgb, var(--app-shell) 78%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: var(--border-thin) solid var(--glass-border);
+  box-shadow:
+    var(--edge-light),
+    0 18px 36px -28px rgba(0, 0, 0, 0.9);
+}
+.topnav__start,
+.topnav__end {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.topnav__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-card);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  flex: none;
+}
+.topnav__links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--sp-3);
+}
+.topnav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--control-h);
+  padding: 0 var(--sp-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+.topnav__link:hover,
+.topnav__link--open {
+  background: var(--veil-hover);
+  color: var(--text-primary);
+  box-shadow: var(--edge-light);
+}
+.topnav__link.active {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  box-shadow:
+    inset 0 0 0 1px var(--accent-line),
+    var(--edge-light);
+}
+.topnav__link.active svg {
+  color: var(--accent-hover);
+}
+
+@media (max-width: 720px) {
+  .topnav__links .topnav__link span {
+    display: none;
+  }
+  /* Wordmark drops on a phone; the symbol alone carries the brand at this width. */
+  .brand-lockup__word {
+    display: none;
+  }
+  .topnav {
+    padding: 0 var(--sp-4);
+  }
+  .user-trigger__email {
+    display: none;
+  }
+}
+
+/* -------------------------------- Content ------------------------------ */
+/* The shell frame already supplies the outer gutter, so .content only adds the
+   vertical rhythm between the topbar and the page, and the tail space that stops the
+   last card sitting against the viewport edge. Horizontal padding here would double
+   the frame's and is exactly where the old layout's spacing went wrong. */
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sp-5) 0 var(--sp-8);
+}
+.content__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  width: 100%;
+}
+.main-column > .content {
+  padding-inline: var(--sp-1);
+}
+
+/* ----------------------------- Responsive ------------------------------ */
+@media (max-width: 900px) {
+  .app-shell,
+  .app-shell--collapsed {
+    grid-template-columns: minmax(0, 1fr);
+    /* Tighter frame on small screens: 16px of gutter on each side of a 360px phone is
+       9% of the width, and the cards inside need it more than the frame does. */
+    --frame: var(--sp-3);
+  }
+  /* As a drawer the rail goes back to flush and square — it is covering the page now,
+     not floating in it, and a rounded panel with a gap would show a sliver of live
+     content down its edge. */
+  .sidebar {
+    position: fixed;
+    z-index: 120;
+    inset: 0 auto 0 0;
+    top: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    margin: 0;
+    border: none;
+    border-right: var(--border-thin) solid var(--glass-border);
+    border-radius: 0;
+    transform: translateX(-100%);
+    transition: transform var(--dur-component) var(--ease-standard);
+    /* A drawer floating over live content needs the heavy blur and a near-opaque
+       base — at mobile widths it covers the page, so any show-through is legible
+       text bleeding into the nav. */
+    background:
+      var(--glass-bg-strong),
+      color-mix(in srgb, var(--app-shell) 94%, transparent);
+    -webkit-backdrop-filter: var(--glass-blur-heavy);
+    backdrop-filter: var(--glass-blur-heavy);
+    box-shadow:
+      inset -1px 0 0 rgba(255, 255, 255, 0.07),
+      var(--shadow-3);
+  }
+  .sidebar[data-mobile-open="true"] {
+    transform: none;
+  }
+  .sidebar__collapse {
+    display: none;
+  }
+  .sidebar__scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    background: var(--overlay);
+    /* Defocusing the page behind the drawer is what makes the drawer read as
+       near, rather than as a panel pasted on top. */
+    -webkit-backdrop-filter: blur(6px) saturate(80%);
+    backdrop-filter: blur(6px) saturate(80%);
+    animation: fade-in var(--dur-micro) var(--ease-standard);
+  }
+  .topbar__menu {
+    display: inline-flex;
+  }
+  .user-trigger__email {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    padding: 0 var(--sp-3);
+  }
+  .content {
+    padding: var(--sp-4) 0 var(--sp-6);
+  }
+  .topbar__create .btn span {
+    display: none;
+  }
+  .topbar__create .btn {
+    padding: 0 var(--sp-3);
+  }
+}

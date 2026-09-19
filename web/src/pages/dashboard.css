@@ -1,0 +1,507 @@
+/* ===================================================================== */
+/* Studio dashboard — cinematic, media-forward (Higgsfield/Kling-style).   */
+/*                                                                        */
+/* Every card here is a piece of footage, so this page is the one place the  */
+/* system's dark ground and the media's own ink coincide. Scrims, plates and */
+/* chips are all rgba(20,12,40,...) — the accent's ink, not a charcoal — so  */
+/* the overlays sit in the same colour world as the rest of the app.         */
+/* ===================================================================== */
+
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* ============================== Spotlight ============================== */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Tall enough that a full-figure model clip shows both face and body, not just
+     a cropped horizontal slice. */
+  min-height: clamp(440px, 64vh, 640px);
+  display: flex;
+  align-items: flex-end;
+  border-radius: var(--radius-xl);
+  background: var(--surface-inset);
+  /* Machined bezel around the hero clip: specular top edge, hard inner rim, deep
+     cast shadow. No bloom behind the plate — the footage inside it is the subject,
+     and a coloured halo around a video frame only muddies its edge. */
+  border: var(--border-thin) solid var(--glass-border);
+  box-shadow:
+    var(--edge-light-strong),
+    inset 0 0 0 1px rgba(20, 12, 40, 0.7),
+    var(--shadow-3),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+  animation: dash-rise var(--dur-page) var(--ease-emphasized) both;
+}
+@media (max-width: 720px) {
+  .spotlight {
+    min-height: 360px;
+  }
+}
+
+.spotlight__media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.spotlight__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Center the crop so the subject sits in the middle of the frame. */
+  object-position: center center;
+  /* Gentle drift keeps the still hero alive without distracting. */
+  animation: dash-kenburns 24s var(--ease-standard) infinite alternate;
+}
+@keyframes dash-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+.spotlight__video {
+  transform-origin: center center;
+}
+
+/* Branded plate when the workspace has no creative yet. */
+.spotlight--blank {
+  background:
+    radial-gradient(120% 120% at 12% 8%, rgba(139, 92, 246, 0.75), transparent 60%),
+    radial-gradient(120% 120% at 95% 100%, rgba(76, 29, 149, 0.5), transparent 55%),
+    linear-gradient(135deg, var(--accent), #2e1065 80%);
+}
+
+.spotlight__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(20, 12, 40, 0.85) 0%, rgba(20, 12, 40, 0.35) 45%, transparent 75%),
+    linear-gradient(0deg, rgba(20, 12, 40, 0.9) 0%, transparent 55%);
+}
+
+.spotlight__inner {
+  position: relative;
+  width: 100%;
+  max-width: 60ch;
+  padding: var(--sp-8) var(--sp-7);
+  animation: dash-rise var(--dur-page) var(--ease-emphasized) both;
+  animation-delay: 80ms;
+}
+.spotlight__title {
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: var(--fw-bold);
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+}
+.spotlight__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-6);
+}
+/* ============================= Section block ========================== */
+.dash-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.dash-block__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.dash-block__title {
+  font-size: var(--fs-section);
+  letter-spacing: -0.02em;
+}
+.dash-block__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: color var(--dur-micro) var(--ease-standard);
+}
+.dash-block__link svg {
+  transition: transform var(--dur-micro) var(--ease-spring);
+}
+.dash-block__link:hover {
+  color: var(--accent-hover);
+}
+.dash-block__link:hover svg {
+  transform: translateX(3px);
+}
+
+/* ============================ Horizontal rail ========================= */
+.dash-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(248px, 1fr);
+  gap: var(--grid-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--sp-2);
+  scrollbar-width: thin;
+}
+.dash-rail::-webkit-scrollbar {
+  height: 8px;
+}
+.dash-rail::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+}
+@media (min-width: 920px) {
+  /* With only a few modes, lay them out evenly instead of scrolling. */
+  .dash-rail {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  }
+}
+
+/* ============================== Mode card ============================= */
+.mode-card {
+  scroll-snap-align: start;
+  display: block;
+  border-radius: var(--radius-lg);
+  opacity: 0;
+  animation: dash-rise var(--dur-component) var(--ease-emphasized) both;
+}
+.mode-card__media {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: var(--border-thin) solid var(--border-subtle);
+  background: var(--surface-inset);
+  box-shadow:
+    var(--edge-light),
+    var(--edge-shade),
+    var(--shadow-2);
+  aspect-ratio: 3 / 4;
+  transition:
+    transform var(--dur-component) var(--ease-spring),
+    border-color var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-component) var(--ease-standard);
+}
+.mode-card .media-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
+.mode-card .media-image {
+  transition:
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-cinematic) var(--ease-standard);
+}
+.mode-card:hover .media-image {
+  transform: scale(1.06);
+}
+a.mode-card:hover .mode-card__media {
+  transform: translateY(-5px);
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--shadow-3),
+    0 0 0 1px rgba(192, 132, 252, 0.3);
+}
+a.mode-card:focus-visible {
+  outline: none;
+}
+a.mode-card:focus-visible .mode-card__media {
+  box-shadow: var(--focus-ring);
+}
+.mode-card__plate {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.92);
+  background:
+    radial-gradient(120% 100% at 30% 0%, rgba(139, 92, 246, 0.8), transparent 60%),
+    linear-gradient(160deg, var(--accent), #2e1065 85%);
+}
+.mode-card__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(0deg, rgba(20, 12, 40, 0.9) 4%, transparent 52%);
+  pointer-events: none;
+}
+.mode-card__cta {
+  position: absolute;
+  top: var(--sp-3);
+  left: var(--sp-3);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 4px var(--sp-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  /* Dark ink, not white: this 12px label sits on the accent ramp, where white
+     measures 1.8:1 at the cyan end. --accent-contrast gives 6.7:1 at worst. */
+  color: var(--accent-contrast);
+  background: var(--accent-gradient);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 6px 18px -6px rgba(168, 85, 247, 0.8);
+}
+/* "Coming soon" reads as unlit glass — same material, no emission. */
+.mode-card__cta--soon {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(20, 12, 40, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+}
+.mode-card__foot {
+  position: absolute;
+  left: var(--sp-4);
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mode-card__name {
+  font-size: var(--fs-card);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+}
+.mode-card__desc {
+  font-size: var(--fs-meta);
+  line-height: var(--lh-snug);
+  color: rgba(255, 255, 255, 0.74);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mode-card--soon {
+  opacity: 0.92;
+}
+.mode-card--soon .media-image,
+.mode-card--soon .mode-card__plate {
+  filter: grayscale(0.4) brightness(0.85);
+}
+
+/* ============================= Feed (grid) =========================== */
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--grid-gap);
+}
+.feed-skeleton {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+}
+.creation-card {
+  display: block;
+  border-radius: var(--radius-lg);
+  opacity: 0;
+  animation: dash-rise var(--dur-component) var(--ease-emphasized) both;
+}
+.creation-card__media {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: var(--border-thin) solid var(--border-subtle);
+  background: var(--surface-inset);
+  box-shadow:
+    var(--edge-light),
+    var(--edge-shade),
+    var(--shadow-2);
+  aspect-ratio: 4 / 5;
+  transition:
+    transform var(--dur-component) var(--ease-spring),
+    border-color var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-component) var(--ease-standard);
+}
+.creation-card .media-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
+.creation-card .media-image {
+  transition:
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-cinematic) var(--ease-standard);
+}
+.creation-card:hover .media-image {
+  transform: scale(1.06);
+}
+.creation-card:hover .creation-card__media {
+  transform: translateY(-5px);
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--shadow-3),
+    0 0 0 1px rgba(192, 132, 252, 0.28);
+}
+.creation-card:focus-visible {
+  outline: none;
+}
+.creation-card:focus-visible .creation-card__media {
+  box-shadow: var(--focus-ring);
+}
+.creation-card__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(0deg, rgba(20, 12, 40, 0.88) 2%, transparent 50%);
+  pointer-events: none;
+}
+.creation-card__kind {
+  position: absolute;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 3px var(--sp-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  color: #fff;
+  background: rgba(20, 12, 40, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+}
+.creation-card__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%) scale(0.9);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(20, 12, 40, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 4px 14px -4px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  opacity: 0;
+  transition:
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-spring);
+}
+.creation-card:hover .creation-card__play {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.creation-card__foot {
+  position: absolute;
+  left: var(--sp-3);
+  right: var(--sp-3);
+  bottom: var(--sp-3);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.creation-card__title {
+  font-size: var(--fs-support);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.creation-card__caption {
+  font-size: var(--fs-meta);
+  color: rgba(255, 255, 255, 0.72);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================== Feed empty =========================== */
+.feed-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-5);
+  text-align: center;
+  border: var(--border-thick) dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-gradient);
+  box-shadow:
+    var(--edge-light),
+    var(--shadow-1);
+}
+.feed-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  color: var(--accent-hover);
+  background: var(--accent-soft-strong);
+  border: var(--border-thin) solid var(--accent-line);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+.feed-empty__text {
+  font-size: var(--fs-support);
+  color: var(--text-muted);
+}
+
+/* ================================ Motion ============================= */
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .dash {
+    gap: var(--sp-7);
+  }
+  .spotlight__inner {
+    padding: var(--sp-6) var(--sp-5);
+  }
+  .feed-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

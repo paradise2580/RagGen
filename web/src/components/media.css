@@ -1,0 +1,320 @@
+/* ----------------------------- MediaFrame ------------------------------ */
+/* Media sits in a recess, never on a raised surface. --surface-inset is the
+   darkest token in the system for exactly this reason: product footage should be
+   the brightest thing in the frame, and it only reads that way against a well
+   that falls away below the canvas. */
+.media-frame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface-inset);
+  box-shadow: var(--well-shadow);
+  border-radius: inherit;
+}
+.media-frame > .media-image,
+.media-frame > .media-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.media-frame--cover .media-image {
+  object-fit: cover;
+}
+.media-frame--contain .media-image {
+  object-fit: contain;
+}
+
+.media-image {
+  opacity: 0;
+  transition: opacity var(--dur-component) var(--ease-standard);
+}
+.media-image.is-loaded {
+  opacity: 1;
+}
+.media-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-inset);
+  color: var(--text-muted);
+}
+
+/* ----------------------------- MediaCard ------------------------------- */
+.media-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.media-card__surface {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-inset);
+  box-shadow:
+    var(--edge-light),
+    var(--edge-shade),
+    var(--shadow-2);
+  overflow: hidden;
+  cursor: default;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-spring);
+}
+button.media-card__surface {
+  cursor: pointer;
+}
+/* Hovering a clip lifts it toward the viewer and rims it in violet light. */
+button.media-card__surface:hover {
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--edge-shade),
+    var(--shadow-3),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+button.media-card__surface:hover .media-image {
+  transform: scale(1.03);
+}
+/* Gradient scrim that fades in on hover — a soft dark wash from the bottom plus a
+   faint accent tint from the top, giving depth without hiding the media. */
+.media-card__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(0deg, rgba(20, 12, 40, 0.5), transparent 45%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 22%, transparent), transparent 40%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-component) var(--ease-standard);
+}
+button.media-card__surface:hover::after,
+button.media-card__surface:focus-visible::after {
+  opacity: 1;
+}
+button.media-card__surface:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+.media-card__surface .media-image {
+  transition:
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-spring);
+}
+.media-card.is-selected .media-card__surface {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    var(--edge-light-strong),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+.media-card__play {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  /* Floats directly over footage, so it takes the real blur — one instance per
+     card, and only the hovered card animates. */
+  background: rgba(20, 12, 40, 0.5);
+  color: #fff;
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 4px 14px -4px rgba(0, 0, 0, 0.7);
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    transform var(--dur-component) var(--ease-spring),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+button.media-card__surface:hover .media-card__play {
+  background: var(--accent-gradient);
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 8px 24px -8px rgba(168, 85, 247, 0.8);
+}
+.media-card__check {
+  position: absolute;
+  z-index: 2;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: var(--text-on-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 10px -2px rgba(168, 85, 247, 0.8);
+  animation: scale-in var(--dur-micro) var(--ease-spring);
+}
+.media-card__badge {
+  position: absolute;
+  z-index: 2;
+  top: var(--sp-2);
+  right: var(--sp-2);
+}
+.media-card__actions {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  display: flex;
+  gap: var(--sp-1);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity var(--dur-micro) var(--ease-standard),
+    transform var(--dur-micro) var(--ease-standard);
+}
+.media-card:hover .media-card__actions,
+.media-card:focus-within .media-card__actions {
+  opacity: 1;
+  transform: none;
+}
+.media-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: rgba(20, 12, 40, 0.55);
+  color: #fff;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+.media-card__action:hover {
+  background: rgba(36, 24, 66, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.media-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding: 0 2px;
+}
+.media-card__meta strong {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.media-card__meta span {
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+
+/* ----------------------------- VideoPlayer ----------------------------- */
+/* The finished-video showcase. A true-black well ringed by a specular hairline:
+   the frame should read as a machined bezel around the footage, and black (not
+   --surface-inset) so letterboxed clips have no visible seam. */
+.video-player {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border: var(--border-thin) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--edge-light),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    var(--shadow-3);
+  overflow: hidden;
+}
+.video-player__el,
+.video-player .media-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.video-player__el {
+  object-fit: contain;
+}
+
+/* Natural-fit mode: the frame hugs the media's real aspect ratio, so there are
+   no letterbox bars / margins. The bezel comes off with the frame — but the
+   media keeps a cast shadow so it still sits in the scene. */
+.video-player--auto,
+.image-preview--auto {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.video-player--auto .video-player__el,
+.image-preview--auto .image-preview__el {
+  box-shadow: var(--shadow-3);
+}
+.video-player--auto .video-player__el,
+.image-preview--auto .image-preview__el {
+  position: static;
+  inset: auto;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+}
+
+/* ---------------------------- ImagePreview ----------------------------- */
+.image-preview {
+  position: relative;
+  width: 100%;
+  background: var(--surface-inset);
+  border: var(--border-thin) solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--edge-light),
+    var(--well-shadow),
+    var(--shadow-2);
+  overflow: hidden;
+}
+.image-preview__el,
+.image-preview .media-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.image-preview__el {
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity var(--dur-component) var(--ease-standard);
+}
+.image-preview__el.is-loaded {
+  opacity: 1;
+}

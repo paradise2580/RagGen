@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Weee :) symbol. Paths are verbatim from the supplied art; the only change is the
+  viewBox, tightened from "0 0 800 800" to the art's own bounds (x 93..711,
+  y 159..684) padded to a square. The original framing left ~20% dead margin, which
+  at a 28px collapsed-sidebar icon or a favicon meant the mark rendered too small to
+  read.
+
+  Safe on any ground: the glass fill is white-translucent, so it lifts off the dark
+  canvas, and the ribbon carries its own colour.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="82 101 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">Weee symbol</title>
+  <desc id="desc">A glassmorphic play shape crossed by a violet-to-cyan flowing ribbon.</desc>
+  <defs>
+    <linearGradient id="glass" x1="210" y1="160" x2="650" y2="660" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".62"/>
+      <stop offset=".52" stop-color="#eaf0ff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#cfdcff" stop-opacity=".13"/>
+    </linearGradient>
+    <linearGradient id="glassEdge" x1="220" y1="160" x2="650" y2="650" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset=".45" stop-color="#aabfff" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".58"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="95" y1="380" x2="710" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a662f5"/>
+      <stop offset=".30" stop-color="#794af2"/>
+      <stop offset=".60" stop-color="#5575f4"/>
+      <stop offset="1" stop-color="#5ce4f1"/>
+    </linearGradient>
+    <linearGradient id="ribbonSoft" x1="130" y1="390" x2="670" y2="585" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ba70fa" stop-opacity=".72"/>
+      <stop offset=".52" stop-color="#6475f7" stop-opacity=".64"/>
+      <stop offset="1" stop-color="#68e5f3" stop-opacity=".76"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Transparent canvas -->
+  <g id="symbol">
+    <path
+      d="M247 159
+         C222 144 202 160 202 189
+         L202 630
+         C202 666 231 684 260 666
+         L667 423
+         C694 406 694 375 666 358
+         Z"
+      fill="url(#glass)"
+      stroke="url(#glassEdge)"
+      stroke-width="3.5"
+      stroke-linejoin="round"/>
+
+    <path
+      d="M93 392
+         C173 270 265 326 347 428
+         C386 477 425 508 474 503
+         C544 495 568 382 648 365
+         C672 360 694 363 711 371
+         C660 413 629 521 530 555
+         C458 580 385 566 324 528
+         C236 472 189 344 93 392
+         Z"
+      fill="url(#ribbonSoft)"
+      opacity=".78"/>
+
+    <path
+      d="M93 392
+         C178 261 268 345 348 438
+         C389 485 426 506 474 501
+         C544 492 570 385 650 367
+         C673 362 696 365 711 373
+         C655 362 621 429 572 474
+         C532 511 490 527 449 522
+         C366 512 309 400 239 363
+         C189 337 140 344 93 392
+         Z"
+      fill="url(#ribbon)"
+      stroke="#ffffff"
+      stroke-opacity=".66"
+      stroke-width="3"
+      stroke-linejoin="round"/>
+
+    <path
+      d="M95 392
+         C179 262 268 346 348 438
+         C388 484 426 506 474 501
+         C545 493 571 385 650 367"
+      fill="none"
+      stroke="#ffffff"
+      stroke-opacity=".72"
+      stroke-width="3"
+      stroke-linecap="round"/>
+
+    <path
+      d="M239 363
+         C308 400 365 512 449 522
+         C492 527 534 510 573 474"
+      fill="none"
+      stroke="#dffcff"
+      stroke-opacity=".40"
+      stroke-width="2.2"
+      stroke-linecap="round"/>
+  </g>
+</svg>

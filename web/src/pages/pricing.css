@@ -1,0 +1,80 @@
+/* ================================ Pricing ============================== */
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--grid-gap);
+  align-items: stretch;
+}
+
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-gradient);
+  box-shadow: var(--glass-panel);
+}
+/* The featured tier is lit; the others are not. That contrast alone carries the
+   hierarchy, so no badge or scale trick is needed. */
+.pricing-card--featured {
+  border-color: var(--accent-line);
+  background: var(--hero-glow), var(--surface-gradient-hover);
+  box-shadow:
+    var(--glass-panel-raised),
+    0 0 0 1px rgba(192, 132, 252, 0.28);
+}
+
+.pricing-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.pricing-card__name {
+  font-size: var(--fs-section);
+  letter-spacing: -0.02em;
+}
+.pricing-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+}
+.pricing-card__amount {
+  font-size: var(--fs-page, 2rem);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.03em;
+}
+.pricing-card__cadence {
+  font-size: var(--fs-support);
+  color: var(--text-muted);
+}
+.pricing-card__desc {
+  font-size: var(--fs-support);
+  color: var(--text-secondary);
+}
+.pricing-card__features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.pricing-card__features li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-support);
+  color: var(--text-secondary);
+}
+.pricing-card__features svg {
+  flex: none;
+  color: var(--accent-hover);
+}
+.pricing-card__cta {
+  margin-top: auto;
+  width: 100%;
+}

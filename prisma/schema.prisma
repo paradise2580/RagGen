@@ -1,0 +1,548 @@
+// prisma/schema.prisma
+//
+// The workspace schema. It carries three groups of models:
+//
+//   - RAG knowledge, queue, usage, quality, search, evaluation and auth models
+//     (RagBrand, RagDocument, RagChunk, RagTask, RagUsage, RagUser, ...)
+//   - generation bookkeeping: GenerationAsset, GenerationJob, GenerationStep,
+//     ProviderRequest, PromptVersion, AdExport
+//   - OrganizationCredit — the single credit row lib/tenant-credits.ts debits
+//   - ProductRecord (+ VariantRecord) — the SOURCE products/images the studio
+//     generates from, seeded (npm run db:seed), added via scripts/add-product.ts, or
+//     created from the studio's own product form.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/tenant"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("TENANT_DATABASE_URL")
+}
+
+// RagGen knowledge lives only in the isolated RagGen database.
+model RagBrand {
+  id             String @id @default(cuid())
+  tenantId       String
+  name           String
+  description    String @default("")
+  mandatoryRules String @default("")
+  revision       Int @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  documents      RagDocument[]
+  @@index([tenantId])
+  @@map("rag_brands")
+}
+
+model RagDocument {
+  id            String @id @default(cuid())
+  brandId       String
+  title         String
+  originalName  String
+  mime          String
+  contentHash   String
+  storageKey    String?
+  status        String @default("DRAFT")
+  extractedText String
+  sourceJobId   String?
+  kind          String @default("GUIDELINE")
+  campaign      String?
+  expiresAt     DateTime?
+  provider      String?
+  modelVersion  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  brand         RagBrand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  chunks        RagChunk[]
+  @@unique([brandId, contentHash])
+  @@index([brandId, status])
+  @@map("rag_documents")
+}
+
+model RagChunk {
+  id             String @id @default(cuid())
+  documentId     String
+  ordinal        Int
+  locator        String
+  text           String
+  embedding      Json?
+  embeddingModel String?
+  vector         Unsupported("vector")?
+  document       RagDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  @@unique([documentId, ordinal])
+  @@map("rag_chunks")
+}
+
+model RagTask {
+  id String @id @default(cuid())
+  tenantId String
+  brandId String?
+  type String
+  payload Json
+  status String @default("QUEUED")
+  attempts Int @default(0)
+  maxAttempts Int @default(3)
+  nextAt DateTime @default(now())
+  lease String?
+  lockedUntil DateTime?
+  progress Int @default(0)
+  result Json?
+  error String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([tenantId, status, nextAt])
+  @@map("rag_tasks")
+}
+
+model RagPrice {
+  id String @id @default(cuid())
+  provider String
+  model String
+  operation String @default("*")
+  inputPerMillion Float
+  outputPerMillion Float
+  cacheReadPerMillion Float @default(0)
+  cacheWritePerMillion Float @default(0)
+  unitMicros Int @default(0)
+  version String
+  createdAt DateTime @default(now())
+  @@index([provider, model, createdAt])
+  @@map("rag_prices")
+}
+
+model RagBudget {
+  tenantId String @id
+  monthlyLimitMicros Int?
+  updatedAt DateTime @updatedAt
+  @@map("rag_budgets")
+}
+
+model RagUsage {
+  id String @id @default(cuid())
+  tenantId String
+  jobId String?
+  taskId String?
+  provider String
+  model String
+  operation String
+  status String @default("RESERVED")
+  reservedMicros Int @default(0)
+  costMicros Int?
+  priceVersion String?
+  inputTokens Int @default(0)
+  outputTokens Int @default(0)
+  cacheReadTokens Int @default(0)
+  cacheWriteTokens Int @default(0)
+  units Float @default(1)
+  usageJson Json?
+  createdAt DateTime @default(now())
+  @@index([tenantId, createdAt])
+  @@index([jobId])
+  @@map("rag_usage")
+}
+
+model RagRating {
+  id String @id @default(cuid())
+  tenantId String
+  jobId String
+  userId String
+  fidelity Int
+  briefAdherence Int
+  brandFit Int
+  approved Boolean @default(false)
+  notes String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([tenantId, jobId, userId])
+  @@map("rag_ratings")
+}
+
+model RagVideoCaption {
+  id String @id @default(cuid())
+  tenantId String
+  assetId String
+  brandId String?
+  jobId String?
+  text String
+  status String @default("DRAFT")
+  embedding Json?
+  embeddingModel String?
+  vector Unsupported("vector")?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([tenantId, assetId])
+  @@map("rag_video_captions")
+}
+
+model RagEvalRun {
+  id String @id @default(cuid())
+  tenantId String
+  name String
+  providerMode String
+  model String
+  status String @default("QUEUED")
+  createdAt DateTime @default(now())
+  results RagEvalResult[]
+  @@map("rag_eval_runs")
+}
+
+model RagEvalResult {
+  id String @id @default(cuid())
+  runId String
+  caseId String
+  variant String
+  blindLabel String
+  prompt String
+  context Json
+  metrics Json
+  humanScores Json?
+  run RagEvalRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  @@unique([runId, caseId, variant])
+  @@map("rag_eval_results")
+}
+
+// Identity directory lives in the primary RagGen database. Tenant application data
+// is isolated by database, using server-owned workspace database names.
+model RagUser {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  passwordHash String
+  disabled Boolean @default(false)
+  createdAt DateTime @default(now())
+  memberships RagMembership[]
+  sessions RagSession[]
+  @@map("rag_users")
+}
+
+model RagWorkspace {
+  id String @id
+  name String
+  databaseName String @unique
+  memberships RagMembership[]
+  @@map("rag_workspaces")
+}
+
+model RagMembership {
+  userId String
+  workspaceId String
+  role String @default("EDITOR")
+  user RagUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace RagWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  @@id([userId, workspaceId])
+  @@map("rag_memberships")
+}
+
+model RagSession {
+  id String @id
+  userId String
+  expiresAt DateTime
+  user RagUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+  @@map("rag_sessions")
+}
+
+model RagCache {
+  id        String @id
+  scope     String
+  value     Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+  @@index([scope])
+  @@map("rag_cache")
+}
+
+// ---------------------------------------------------------------------------
+// Credits
+// ---------------------------------------------------------------------------
+
+// The application's internal credit ledger, debited by lib/tenant-credits.ts. There is
+// exactly one row per workspace (see prisma/seed.ts); `tenantId` holds the workspace id
+// (VIDEO_GENERATOR_TENANT_ID in local mode).
+model OrganizationCredit {
+  id           String    @id @default(cuid())
+  tenantId     String    @unique
+  expiresAt    DateTime?
+  balance      Int       @default(0)
+  addonBalance Int       @default(0)
+  isTrial      Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("organization_credits")
+}
+
+// ---------------------------------------------------------------------------
+// Source products (input images for generation)
+// ---------------------------------------------------------------------------
+
+enum EnrichmentStatus {
+  PENDING
+  ENRICHED
+  FAILED
+  SKIPPED
+}
+
+model ProductRecord {
+  id                String           @id @default(cuid())
+  integrationId     String
+  userId            String?
+  platform          String
+  externalProductId String
+  externalHandle    String?
+  payload           Json
+  enriched_data     Json?
+  enriched_draft    Json?
+  draftedAt         DateTime?
+  title             String?
+  skuAny            String?
+  feedback          Json?
+  ingestedAt        DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  status            EnrichmentStatus @default(PENDING)
+
+  variants VariantRecord[] @relation("ProductToVariants")
+
+  @@unique([integrationId, externalProductId])
+  @@index([integrationId])
+  @@index([platform])
+  @@map("product_records")
+}
+
+model VariantRecord {
+  id                String   @id @default(cuid())
+  integrationId     String
+  userId            String?
+  productRecordId   String
+  platform          String
+  externalVariantId String
+  sku               String?
+  payload           Json
+  ingestedAt        DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  productRecord ProductRecord @relation("ProductToVariants", fields: [productRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, platform, externalVariantId])
+  @@index([productRecordId])
+  @@index([integrationId])
+  @@map("variant_records")
+}
+
+// ---------------------------------------------------------------------------
+// Generation studio
+// ---------------------------------------------------------------------------
+
+enum GenAssetType {
+  PRODUCT_IMAGE
+  GENERATED_IMAGE
+  GENERATED_VIDEO
+  BRAND_ASSET
+  OTHER
+}
+
+enum GenAssetSource {
+  UPLOAD
+  GENERATED
+  EXTERNAL
+}
+
+enum GenAssetStatus {
+  PENDING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum GenerationServiceType {
+  PRODUCT_VIDEO_AD
+  PRODUCT_ON_MODEL_AD
+}
+
+enum GenerationModelType {
+  AI_MODEL
+  PERSONALIZED_MODEL
+  NO_MODEL
+  EXISTING_MODEL_PHOTO
+}
+
+enum GenerationStatus {
+  DRAFT
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum GenerationStepStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
+enum ProviderName {
+  OPENAI
+  ANTHROPIC
+  KLING
+  AWS
+  INTERNAL
+}
+
+enum ProviderRequestStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum AdExportStatus {
+  DRAFT
+  EXPORTED
+  FAILED
+}
+
+model GenerationAsset {
+  id              String         @id @default(cuid())
+  createdByUserId String?
+  productId       String?
+  type            GenAssetType
+  source          GenAssetSource
+  s3Key           String?
+  cdnUrl          String?
+  mime            String?
+  size            Int?
+  width           Int?
+  height          Int?
+  duration        Int?
+  status          GenAssetStatus @default(PENDING)
+  checksum        String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  adExports AdExport[]
+
+  @@index([status])
+  @@index([productId])
+  @@index([type])
+  @@map("video_generator_assets")
+}
+
+model GenerationJob {
+  id              String                @id @default(cuid())
+  createdByUserId String?
+  productId       String?
+  serviceType     GenerationServiceType
+  modelType       GenerationModelType?
+  status          GenerationStatus      @default(DRAFT)
+  progress        Int                   @default(0)
+  inputJson       Json                  @default("{}")
+  outputAssetIds  Json                  @default("[]")
+  error           String?
+
+  attempts       Int       @default(0)
+  maxAttempts    Int       @default(90)
+  nextPollAt     DateTime?
+  lockedAt       DateTime?
+  externalTaskId String?
+
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  canceledAt  DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  steps          GenerationStep[]
+  providerCalls  ProviderRequest[]
+  promptVersions PromptVersion[]
+  adExports      AdExport[]
+
+  @@index([productId])
+  @@index([status])
+  @@index([status, nextPollAt])
+  @@map("video_generator_generation_jobs")
+}
+
+model GenerationStep {
+  id                String               @id @default(cuid())
+  jobId             String
+  name              String
+  status            GenerationStepStatus @default(PENDING)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  providerRequestId String?
+  error             String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  job             GenerationJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  providerRequest ProviderRequest? @relation(fields: [providerRequestId], references: [id], onDelete: SetNull)
+
+  @@index([jobId])
+  @@map("video_generator_generation_steps")
+}
+
+model ProviderRequest {
+  id             String                @id @default(cuid())
+  jobId          String?
+  provider       ProviderName
+  operation      String
+  requestHash    String?
+  status         ProviderRequestStatus @default(PENDING)
+  latencyMs      Int?
+  costEstimate   Decimal?              @db.Decimal(12, 6)
+  externalTaskId String?
+  errorCategory  String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  job             GenerationJob?   @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  generationSteps GenerationStep[]
+
+  @@index([jobId])
+  @@map("video_generator_provider_requests")
+}
+
+model PromptVersion {
+  id             String   @id @default(cuid())
+  jobId          String?
+  templateId     String?
+  promptText     String
+  negativePrompt String?
+  version        Int      @default(1)
+  score          Int?
+  profileKey     String?
+  planJson       Json?
+  outputJson     Json?
+  validationJson Json?
+  createdAt      DateTime @default(now())
+
+  job GenerationJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([jobId])
+  @@map("video_generator_prompt_versions")
+}
+
+model AdExport {
+  id        String         @id @default(cuid())
+  jobId     String
+  assetId   String?
+  preset    String
+  format    String
+  width     Int?
+  height    Int?
+  duration  Int?
+  status    AdExportStatus @default(DRAFT)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  job   GenerationJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  asset GenerationAsset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  @@index([jobId])
+  @@map("video_generator_ad_exports")
+}

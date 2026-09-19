@@ -1,0 +1,526 @@
+/* ============================ Generation composer ===================== */
+
+.composer-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-5);
+  /* Push the panel down so it sits in the vertical centre of the studio. */
+  min-height: calc(100vh - var(--header-h) - var(--sp-9));
+  padding-top: var(--sp-6);
+}
+/* Children share one centred measure. */
+.composer-view > .composer-title,
+.composer-view > .composer-head,
+.composer-view > .composer,
+.composer-view > .composer__status,
+.composer-view > .composer__plan,
+.composer-view > .inline-message {
+  width: 100%;
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+/* Title sitting on top of the generate panel, centred over it. */
+.composer-title {
+  font-size: var(--fs-page);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: calc(var(--sp-2) * -1);
+}
+
+.composer-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-1);
+}
+.composer-head__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border: var(--border-thin) solid var(--accent-line);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+  box-shadow:
+    var(--edge-light),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+.composer-head__title {
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.03em;
+  background: linear-gradient(
+    180deg,
+    var(--text-primary),
+    color-mix(in srgb, var(--text-primary) 68%, var(--text-muted))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.composer-head__sub {
+  max-width: 52ch;
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+}
+
+/* -------------------------------- Bar ---------------------------------- */
+.composer {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  border: var(--border-thin) solid var(--glass-border-strong);
+  border-radius: var(--radius-xl);
+  /* The signature surface of the app: a thick slab of lit glass floating over the
+     ambient wash. It gets the heavy blur because there is exactly one of it on
+     screen, and it's what the whole page is composed around. */
+  background:
+    var(--glass-sheen),
+    var(--glass-bg-strong),
+    color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+  backdrop-filter: var(--glass-blur-heavy);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  box-shadow:
+    var(--glass-panel-raised),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+/* Decorative accent glow, clipped to the bar without clipping dropdowns. */
+.composer__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+.composer__glow::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  right: -10%;
+  width: 50%;
+  height: 220%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.5), transparent 70%);
+  filter: blur(60px);
+  opacity: 0.85;
+}
+/* ------------------------------- Body ---------------------------------- */
+.composer__body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.composer__promptrow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+/* "Coming soon" black-out over the generator surface for model types that have no
+   pipeline yet (AI / Personalized). The model chip sits below and stays interactive. */
+.composer__comingsoon {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  padding: var(--sp-4);
+  text-align: center;
+  border-radius: var(--radius-lg);
+  background: rgba(7, 6, 12, 0.8);
+  /* Heavy defocus, not a dim: the surface underneath must read as genuinely
+     unavailable rather than merely dark. */
+  backdrop-filter: blur(14px) saturate(60%);
+  -webkit-backdrop-filter: blur(14px) saturate(60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.composer__comingsoon-title {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+
+.composer__comingsoon-sub {
+  max-width: 42ch;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* The brief — the user's description of the video, and the primary input on this
+   screen. Strips the default control chrome for an inline feel: the glass bar reads
+   as one surface until the field is focused. Taller than the old single-line control
+   it replaced, because a brief is usually a sentence or two, and vertically
+   resizable for anything longer. */
+.composer .composer__prompt {
+  flex: 1;
+  min-width: 0;
+  min-height: 64px;
+  max-height: 220px;
+  align-self: center;
+  padding: var(--sp-2) var(--sp-3);
+  /* Chromeless at rest — the glass bar IS the field's container. Overrides the
+     .control well treatment, which would double up inside the slab. */
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
+  resize: vertical;
+}
+.composer .composer__prompt:hover:not(:focus) {
+  border-color: var(--border-subtle);
+  background: rgba(0, 0, 0, 0.16);
+}
+/* On focus it sinks into a well, so the writing surface is unmistakable. */
+.composer .composer__prompt:focus,
+.composer .composer__prompt:focus-visible {
+  background: rgba(0, 0, 0, 0.32);
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--well-shadow),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+
+/* Right-hand add tiles */
+.composer__tiles {
+  display: flex;
+  gap: var(--sp-2);
+  flex: none;
+}
+.composer-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 80px;
+  padding: var(--sp-2);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--well-bg);
+  box-shadow:
+    var(--well-shadow),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+.composer-tile:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--veil-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--shadow-2);
+}
+.composer-tile:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.composer-tile__media {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  border: var(--border-thin) dashed var(--border-strong);
+  box-shadow: var(--well-shadow);
+  color: var(--text-muted);
+  overflow: hidden;
+}
+.composer-tile.is-set .composer-tile__media {
+  border-style: solid;
+  border-color: var(--accent-line);
+  color: var(--accent-hover);
+}
+/* A required-but-empty slot pulses accent light — it's blocking the Generate
+   button, so it should be the thing the eye lands on. */
+.composer-tile.is-required .composer-tile__media {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 3px var(--accent-soft),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+.composer-tile__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.composer-tile__check {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+  border: 2px solid var(--surface-inset);
+  box-shadow: 0 0 10px -1px rgba(168, 85, 247, 0.3);
+}
+.composer-tile.is-set {
+  color: var(--text-primary);
+}
+
+/* Generate button */
+.composer__generate {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  height: 80px;
+  padding: 0 var(--sp-6);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  /* The loudest object in the app, and one of only three elements exempt from the
+     one-accent-cast rule (see tokens.css): the violet cast plus a wider cyan bloom,
+     so the primary CTA reads as emitting light onto the glass bar it sits in. */
+  box-shadow:
+    0 14px 34px -10px rgba(168, 85, 247, 0.7),
+    0 0 44px -14px rgba(34, 211, 238, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  transition:
+    filter var(--dur-micro) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+.composer__generate:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow:
+    0 18px 42px -10px rgba(168, 85, 247, 0.85),
+    0 0 44px -14px rgba(34, 211, 238, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+.composer__generate:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+/* Disabled means unlit: both accent layers come off, so "not ready" is legible
+   from across the room rather than from a subtle opacity shift. */
+.composer__generate:disabled {
+  filter: grayscale(0.5);
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ------------------------------- Chips --------------------------------- */
+.composer__chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.composer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 36px;
+  padding: 0 var(--sp-3);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  /* Chips live inside the glass bar, so they tint it rather than covering it. */
+  background: var(--veil-hover);
+  box-shadow: var(--edge-light);
+  color: var(--text-secondary);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard);
+}
+.composer-chip:hover,
+.composer-chip.is-open {
+  color: var(--text-primary);
+  border-color: var(--accent-line);
+  background: var(--veil-hover-strong);
+  box-shadow:
+    var(--edge-light-strong),
+    0 0 20px -6px rgba(168, 85, 247, 0.3);
+}
+.composer-chip svg:first-child {
+  color: var(--text-muted);
+  flex: none;
+}
+.composer-chip.is-open svg:first-child {
+  color: var(--accent-hover);
+}
+.composer-chip__label {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.composer-chip__caret {
+  color: var(--text-muted);
+}
+.composer-chip--ghost {
+  border-style: dashed;
+}
+
+/* ------------------------------ Status --------------------------------- */
+.composer__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-support);
+  color: var(--text-muted);
+}
+.composer__status svg {
+  flex: none;
+  color: var(--text-muted);
+}
+.composer__status--ready {
+  color: var(--accent-hover);
+}
+.composer__status--ready svg {
+  color: var(--accent-hover);
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.6));
+}
+
+/* --------------------------- Prompt plan ------------------------------- */
+.composer__plan {
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-gradient);
+  box-shadow:
+    var(--edge-light),
+    var(--shadow-2);
+  overflow: hidden;
+}
+.composer__plan-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+  /* Header sits a shade above the body it caps. */
+  background: var(--veil-hover);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+.composer__plan-head svg {
+  color: var(--accent-hover);
+}
+.composer__plan-sub {
+  margin-left: auto;
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-regular);
+  color: var(--text-muted);
+}
+.composer__plan-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+.composer__plan-label {
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.composer__plan-text {
+  font-size: var(--fs-support);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+.composer__plan-rules {
+  margin: 0;
+  padding-left: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-support);
+  color: var(--text-secondary);
+}
+.composer__plan-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ---------------------- Product photo picker toolbar ------------------- */
+.composer__picker-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.composer__picker-actions {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+/* ----------------------------- Responsive ------------------------------ */
+@media (max-width: 860px) {
+  .composer {
+    flex-direction: column;
+  }
+}
+@media (max-width: 620px) {
+  .composer__promptrow {
+    flex-wrap: wrap;
+  }
+  .composer .composer__prompt {
+    flex-basis: 100%;
+    order: -1;
+  }
+  .composer__generate {
+    flex: 1;
+    height: 56px;
+  }
+}

@@ -1,0 +1,284 @@
+.wizard {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 320px;
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+/* ----------------------------- Step rail ------------------------------ */
+.wizard__rail {
+  position: sticky;
+  top: calc(var(--header-h) + var(--sp-5));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background var(--dur-micro) var(--ease-standard);
+}
+.wizard-step:hover:not(:disabled) {
+  background: var(--veil-hover);
+  box-shadow: var(--edge-light);
+}
+.wizard-step:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.wizard-step.is-active {
+  background: var(--surface-gradient);
+  border: var(--border-thin) solid var(--border-subtle);
+  box-shadow:
+    var(--edge-light),
+    var(--shadow-1);
+}
+.wizard-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  border: var(--border-thick) solid var(--border-strong);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  transition: all var(--dur-micro) var(--ease-standard);
+}
+.wizard-step.is-active .wizard-step__num {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  box-shadow: 0 0 16px -5px rgba(168, 85, 247, 0.3);
+}
+/* A completed step's numeral fills in and lights up. */
+.wizard-step.is-complete .wizard-step__num {
+  background: var(--accent-gradient);
+  border-color: var(--accent-hover);
+  color: var(--text-on-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 14px -4px rgba(168, 85, 247, 0.3);
+}
+.wizard-step__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.wizard-step__label {
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+}
+.wizard-step__hint {
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ----------------------------- Step body ------------------------------ */
+.wizard__main {
+  min-width: 0;
+}
+.wizard__panel {
+  background: var(--surface-gradient);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+  box-shadow: var(--glass-panel);
+}
+.wizard__step-view {
+  animation: fade-rise var(--dur-component) var(--ease-standard);
+}
+.wizard__step-title {
+  font-size: var(--fs-section);
+}
+.wizard__step-desc {
+  margin-top: var(--sp-1);
+  margin-bottom: var(--sp-5);
+  font-size: var(--fs-support);
+  color: var(--text-secondary);
+}
+.wizard__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+}
+
+/* --------------------------- Summary panel ---------------------------- */
+.wizard__summary {
+  position: sticky;
+  top: calc(var(--header-h) + var(--sp-5));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.summary-card {
+  background: var(--surface-gradient);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-panel);
+  overflow: hidden;
+}
+.summary-card__head {
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--veil-hover);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.summary-card__body {
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  font-size: var(--fs-support);
+}
+.summary-row__label {
+  color: var(--text-muted);
+}
+.summary-row__value {
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+  text-align: right;
+}
+.summary-row__value--empty {
+  color: var(--text-muted);
+  font-weight: var(--fw-regular);
+}
+
+/* Prompt plan: clearly "generated content", not configuration */
+.prompt-plan {
+  /* Model output, not configuration: a recessed console well with mono text,
+     visibly a different kind of surface from the panels around it. */
+  background: rgba(0, 0, 0, 0.34);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    var(--well-shadow),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+.prompt-plan__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  color: var(--accent-hover);
+}
+.prompt-plan__body {
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+}
+.prompt-plan__section-label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+}
+.prompt-plan__text {
+  color: var(--text-secondary);
+}
+.prompt-plan__rules {
+  margin: 0;
+  padding-left: var(--sp-4);
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cost-note {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+
+/* ----------------------------- Responsive ------------------------------ */
+@media (max-width: 1080px) {
+  .wizard {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .wizard__summary {
+    position: static;
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .wizard__summary > * {
+    flex: 1;
+    min-width: 260px;
+  }
+}
+@media (max-width: 760px) {
+  .wizard {
+    grid-template-columns: 1fr;
+  }
+  .wizard__rail {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: var(--sp-1);
+    padding-bottom: var(--sp-2);
+  }
+  .wizard-step {
+    flex: none;
+  }
+  .wizard-step__text {
+    display: none;
+  }
+  .wizard-step.is-active .wizard-step__text {
+    display: flex;
+  }
+  .wizard__summary {
+    flex-direction: column;
+  }
+}
+
+/* Selected model image preview + change action in the model step. */
+.model-asset-pick {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+}
+.model-asset-pick .media-card {
+  width: 140px;
+  flex: none;
+}

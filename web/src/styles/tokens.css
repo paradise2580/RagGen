@@ -1,0 +1,361 @@
+/**
+ * Design tokens — Weee :) dark glass system.
+ *
+ * The palette is lifted straight off the logo mark: a violet-to-cyan ribbon
+ * (#a855f7 → #818cf8 → #22d3ee) crossing a pane of frosted glass, floating on
+ * near-black. Violet is the interactive colour, cyan is its companion, and the
+ * two only ever appear together as a ramp — which is why an accent fill in this
+ * app looks like a slice of the logo rather than a generic gradient.
+ *
+ * Three rules hold this together; break any and the glass stops reading as glass:
+ *
+ * 1. Depth is always THREE layers — tint, top edge-light, bottom inner-shade.
+ *    A translucent fill on its own looks like a decal, which is the single most
+ *    common way glassmorphism goes wrong. Use --glass-panel (or the --edge-*
+ *    tokens) rather than hand-rolling an rgba background.
+ * 2. Real blur scales with AREA, so it goes on chrome and overlays — sidebar,
+ *    header, modals, popovers, toasts, the composer bar. A card inside a grid
+ *    uses --surface-gradient plus the edge tokens to fake refraction instead,
+ *    because /assets and /generations render dozens at once and card-sized
+ *    backdrop-filters drop those grids off 60fps.
+ *
+ *    The exception, and why it is not a contradiction: small fixed-size chips
+ *    that sit ON media — play buttons, kind pills, hover actions — do keep a real
+ *    blur. Two dozen 40px circles blur less total area than one blurred card, and
+ *    they are the elements that most need to read as glass, because they overlay
+ *    moving footage. Blur a chip; never blur the card behind it.
+ * 3. Chroma is scarce. The violet/cyan ramp is the only saturated colour in the
+ *    UI, which is what keeps product footage the brightest thing on screen — the
+ *    whole point of a tool whose output is video.
+ * 4. ONE accent shadow per element, and no wider than ~24px. This is the rule that
+ *    keeps the glass minimal rather than neon: a coloured bloom fogs the very edge
+ *    the glass is trying to define, and two of them stacked (violet + cyan) turns
+ *    every hover into a light show. Reach for the offset cast, the hairline rim, or
+ *    --edge-light — not a second glow.
+ *
+ *    Exactly three elements are exempt, each a single-instance "the app is working
+ *    on it" signal that has to read across the room: .composer__generate (the one
+ *    primary CTA), .gen-status--running and .timeline__step--running. If you find
+ *    yourself adding a fourth, the answer is almost certainly no.
+ *
+ * Dark-only by design: there is no light token set and no runtime toggle, so
+ * every effect below is tuned against exactly one backdrop — near-black.
+ *
+ * Geometry, type and motion are unchanged from the Fly.io pass (4/8/10/16 radii,
+ * serif display over a humanist grotesque, 150/200/300ms on one ease-out curve).
+ * Only colour and the depth model moved.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- Accent (the logo ribbon: violet is "you can act on this") ----
+     Shifted a stop brighter than a light theme would use: on near-black the
+     mid-500s read muddy, and hover BRIGHTENS rather than darkens. */
+  /* Fills, rims and borders only: as TEXT this measures 3.74:1 on the canvas and
+     fails AA. Use --accent-hover (5.6:1 at worst) for anything with a glyph. */
+  --accent: #a855f7; /* violet-500 — the ribbon's left end */
+  --accent-hover: #c084fc; /* violet-400 — the type-safe violet */
+  --accent-active: #9333ea; /* violet-600 — pressed recedes toward the canvas */
+  --accent-contrast: #0a0713; /* near-black ink on a bright accent fill */
+  --accent-soft: rgba(168, 85, 247, 0.15); /* active pill */
+  --accent-soft-strong: rgba(168, 85, 247, 0.26);
+  --accent-line: rgba(192, 132, 252, 0.44);
+
+  /* Companion hue — the ribbon's right end. Used in gradients and, uniquely, as
+     --info: cyan already means "informational" here because it is half the logo,
+     so spending it that way costs no extra chroma. Never as a general-purpose
+     accent, or the violet stops meaning "interactive". */
+  --accent-2: #22d3ee; /* cyan-400 */
+  /* The ribbon itself, at the angle it crosses the mark. Every stop is light
+     enough for --accent-contrast ink to clear 4.5:1 — 6.7:1 at the indigo
+     mid-stop, which is the worst point, rising to 11:1 at the cyan end — so a
+     label is legible anywhere on a 135° fill, not just in the middle. White ink
+     would NOT work here: it measures 1.8:1 on the cyan end. */
+  --accent-gradient: linear-gradient(135deg, #c084fc 0%, #818cf8 48%, #22d3ee 100%);
+  --accent-gradient-soft: linear-gradient(
+    135deg,
+    rgba(192, 132, 252, 0.24),
+    rgba(34, 211, 238, 0.13)
+  );
+  /* Layered accent glow for primary surfaces (focus, CTA, active states). On dark
+     this carries real luminance — the ring reads as emitted light, which is the
+     one thing a light theme genuinely cannot do. */
+  --accent-glow:
+    0 0 0 1px rgba(192, 132, 252, 0.5), 0 8px 24px -8px rgba(168, 85, 247, 0.55),
+    0 0 24px -8px rgba(34, 211, 238, 0.3);
+
+  /* ---- Glass system ----
+     The panel recipe. --glass-bg is a gradient, not a flat rgba: light falls off
+     top→bottom across a real slab, and the two stops are what make the surface
+     look lit rather than tinted. */
+  --glass-bg: linear-gradient(
+    168deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.034) 46%,
+    rgba(255, 255, 255, 0.018) 100%
+  );
+  --glass-bg-strong: linear-gradient(
+    168deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.056) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  /* saturate() is not optional — it pulls colour out of whatever sits behind the
+     glass (product thumbnails, the accent ramp) and is most of why this reads as
+     glass instead of grey film. */
+  --glass-blur: blur(28px) saturate(185%);
+  --glass-blur-heavy: blur(44px) saturate(200%);
+  --glass-blur-light: blur(14px) saturate(160%);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-strong: rgba(255, 255, 255, 0.19);
+  /* Diagonal specular streak for ::after overlays on hero / feature panels. */
+  --glass-sheen: linear-gradient(
+    104deg,
+    transparent 12%,
+    rgba(255, 255, 255, 0.1) 46%,
+    rgba(255, 255, 255, 0.02) 58%,
+    transparent 72%
+  );
+
+  /* ---- Edge lighting — the "thickness" of the glass ----
+     Top hairline catches the light, bottom inner-shade grounds the panel. Used
+     together they carve an edge; used alone they look like a mistake. */
+  --edge-light: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --edge-light-strong: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --edge-shade: inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  /* Full slab: rim, top specular, bottom shade, contact shadow, ambient cast. */
+  --glass-panel:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.5),
+    0 18px 44px -20px rgba(0, 0, 0, 0.75);
+  --glass-panel-raised:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45), 0 4px 10px -3px rgba(0, 0, 0, 0.55),
+    0 32px 70px -26px rgba(0, 0, 0, 0.85);
+
+  /* ---- Status families ----
+     Lifted to the 400s: a light theme's mid-tones vanish on near-black. Soft
+     fills run richer than their light counterparts because low-alpha colour over
+     a dark backdrop loses far more saturation than over white. */
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.16);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.16);
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.16);
+  --info: var(--accent-2);
+  --info-soft: rgba(34, 211, 238, 0.16);
+
+  /* ---- Surfaces — near-black, warmed a few degrees toward the accent violet ----
+     A dead-neutral grey next to a violet ramp reads as a rendering fault, so
+     every step carries a trace of the accent hue. */
+  --canvas: #07060c;
+  --app-shell: #0b0912;
+  --surface: #12101b;
+  --surface-elevated: #171425;
+  --surface-inset: #09080f; /* wells / inputs / code — recedes BELOW the canvas */
+  --surface-hover: #1d1930;
+
+  /* ---- Borders ----
+     Translucent white, not opaque grey: borders must pick up whatever glows
+     behind them, or glass panels get a visible flat outline. */
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  /* ---- Text ----
+     Primary is off-white with a violet cast, never #fff — pure white on
+     near-black haloes badly at body sizes on LCDs. */
+  --text-primary: #f1eefa;
+  --text-secondary: #b0aac9;
+  /* Muted carries --fs-meta captions and hints (12px), so it needs the full
+     4.5:1 rather than the large-text 3:1. Measured against every ground it
+     actually lands on — canvas, surface, elevated, inset well, hover fill, and
+     both glass tints — --glass-bg-strong is the brightest (it composites to
+     ~#28272e over the app shell) and is therefore the binding constraint. This
+     value clears 4.5:1 on all of them: 4.88:1 at worst, 6.7:1 on the canvas.
+     #8e87a8, one step darker, measured 4.35:1 there and failed. */
+  --text-muted: #9790b0;
+  --text-on-accent: var(--accent-contrast);
+
+  /* ---- Effects ---- */
+  --focus-ring: 0 0 0 2px var(--canvas), 0 0 0 4px var(--accent-hover);
+  --overlay: rgba(5, 4, 10, 0.72); /* modal backdrop, paired with a blur */
+  --scrim: linear-gradient(180deg, transparent, rgba(4, 3, 9, 0.85));
+
+  /* Shadow levels. Far deeper and blacker than a light theme's: on a dark canvas
+     a shadow only reads if it approaches true black at high alpha. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.55), 0 1px 1px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 12px 30px -14px rgba(0, 0, 0, 0.8), 0 2px 6px -2px rgba(0, 0, 0, 0.5);
+  --shadow-3: 0 40px 84px -30px rgba(0, 0, 0, 0.92), 0 8px 20px -8px rgba(0, 0, 0, 0.6);
+
+  /* High-impact gradient — hero / active-generation surfaces. Violet key light
+     top-right, cyan bounce bottom-left: the logo's two ends, spatially. */
+  --hero-glow:
+    radial-gradient(120% 120% at 85% -10%, rgba(168, 85, 247, 0.24), transparent 58%),
+    radial-gradient(90% 90% at 5% 110%, rgba(34, 211, 238, 0.13), transparent 55%);
+
+  /* ---- Surface gradients ----
+     The no-blur depth recipe for repeating items. A top-lit vertical fall-off
+     plus a whisper of accent at the far corner mimics refraction closely enough
+     that cards sit convincingly in the same world as the real glass. */
+  --surface-gradient: linear-gradient(
+    164deg,
+    color-mix(in srgb, var(--surface-elevated) 100%, white 3%) 0%,
+    var(--surface) 58%,
+    color-mix(in srgb, var(--surface) 93%, var(--accent) 7%) 100%
+  );
+  --surface-gradient-hover: linear-gradient(
+    164deg,
+    color-mix(in srgb, var(--surface-hover) 100%, white 5%) 0%,
+    var(--surface-hover) 56%,
+    color-mix(in srgb, var(--surface-hover) 86%, var(--accent) 14%) 100%
+  );
+  /* Ambient page wash, fixed to the viewport: violet key light top-right, cyan
+     bounce bottom-left, so the stage has a direction and the logo's gradient has
+     somewhere to belong. */
+  --canvas-gradient:
+    radial-gradient(115% 65% at 100% 0%, rgba(168, 85, 247, 0.15), transparent 58%),
+    radial-gradient(85% 58% at 0% 100%, rgba(34, 211, 238, 0.08), transparent 56%),
+    radial-gradient(60% 45% at 50% 45%, rgba(129, 140, 248, 0.05), transparent 70%),
+    var(--canvas);
+
+  /* Fine dithering film over the canvas. Large low-alpha gradients on a dark
+     background band visibly on 8-bit panels; ~3-4% noise breaks up the steps and
+     is the difference between "rendered" and "photographed". One fixed layer, no
+     per-panel cost. */
+  --noise-overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+
+  /* ---- Typography ----
+     Two families, per the design: a serif for display/headings (premium, a
+     little editorial) and a humanist grotesque for everything else. Neither
+     retail face is bundled, so both stacks fall through to a close system
+     equivalent — which is why --fw-display is a real weight rather than a
+     variable-font axis. */
+  --font-display: "Mackinac", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans:
+    "Fricolage Grotesque", "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  --numeric: var(--font-sans), ui-monospace, "SF Mono", monospace;
+
+  --fs-display: 3rem; /* 48px */
+  --fs-page: 2rem; /* 32px */
+  --fs-section: 1.25rem;
+  --fs-card: 1rem;
+  --fs-body: 0.9375rem; /* 15px */
+  --fs-support: 0.875rem;
+  --fs-label: 0.8125rem;
+  --fs-meta: 0.75rem;
+
+  /* Serif display at size needs its tracking pulled in hard or the words drift
+     apart; body text gets none, since the grotesque is already tightly fitted. */
+  --ls-display: -1.2px;
+  --ls-heading: -1px;
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-body: 1.66;
+
+  /* 450 is the body weight the design specifies — a hair above regular, and about
+     the ceiling on a dark ground: past this, light-on-dark text starts to bloom
+     into a smeared bold no amount of greyscale AA fixes. 575 is the display
+     weight; it lands on a real 600 when the serif falls back to Georgia. */
+  --fw-regular: 450;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+  --fw-display: 575;
+
+  /* ---- Spacing scale (4px base) ---- */
+  --sp-1: 0.25rem; /* 4 */
+  --sp-2: 0.5rem; /* 8 */
+  --sp-3: 0.75rem; /* 12 */
+  --sp-4: 1rem; /* 16 */
+  --sp-5: 1.5rem; /* 24 */
+  --sp-6: 2rem; /* 32 */
+  --sp-7: 2.5rem; /* 40 */
+  --sp-8: 3rem; /* 48 */
+  --sp-9: 4rem; /* 64 */
+
+  /* ---- Geometry ----
+     Tighter than the previous system: with depth carried by a soft shadow
+     instead of a bright specular edge, corners no longer need length of curve
+     for a highlight to travel along, and the design's 4/8/10/16 ramp keeps
+     controls looking precise rather than pill-soft. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+
+  --border-thin: 1px;
+  --border-thick: 1.5px;
+
+  /* 44px is the design's AAA touch target, so the default control clears it on
+     the small end once padding is counted, and --control-h-lg is a true 44. */
+  --control-h: 38px;
+  --control-h-sm: 30px;
+  --control-h-lg: 44px;
+
+  --icon-sm: 16px;
+  --icon-md: 18px;
+  --icon-lg: 22px;
+
+  --sidebar-w: 208px;
+  --sidebar-w-collapsed: 72px;
+  --header-h: 62px;
+  /* Narrowed from 1240 so the app reads as a centred column with real gutters
+     rather than a full-bleed dashboard. Grids inside it still reflow by
+     auto-fill, so this changes measure, not column counts. */
+  --container-max: 1120px;
+  --container-narrow: 760px;
+  --grid-gap: var(--sp-4);
+
+  /* ---- Motion ----
+     One easing curve for everything ordinary (the design's standard material
+     ease-out) and three durations: 150 / 200 / 300. Nothing overshoots by
+     default — on an infrastructure tool, bounce reads as latency. */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  /* The one curve with mass, kept for elements the user drags or flips — toggle
+     knobs, panel entrances. Used sparingly and never on a colour change. */
+  --ease-liquid: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --dur-instant: 100ms;
+  --dur-micro: 150ms;
+  --dur-component: 200ms;
+  --dur-page: 300ms;
+  --dur-cinematic: 560ms;
+
+  /* ---- Interaction veils ----
+     Hover and pressed states on glass are a wash of light, never an opaque
+     swatch — an opaque hover fill punches a flat rectangle through the blur.
+     Prefer these over hand-rolling an rgba hover fill. */
+  --veil-hover: rgba(255, 255, 255, 0.06);
+  --veil-hover-strong: rgba(255, 255, 255, 0.09);
+  --veil-active: rgba(255, 255, 255, 0.14);
+  /* Inset well: the recipe for anything that should sit BELOW the canvas — text
+     inputs, code blocks, track grooves, progress rails. On dark that means going
+     blacker than the surface, not lighter. */
+  --well-bg: rgba(0, 0, 0, 0.3);
+  --well-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Single dark theme. Any [data-theme] value inherits the :root tokens above, so
+   a stale data-theme="light" attribute cannot half-apply a theme that no longer
+   exists. */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-micro: 0ms;
+    --dur-component: 0ms;
+    --dur-page: 0ms;
+    --dur-cinematic: 0ms;
+  }
+}

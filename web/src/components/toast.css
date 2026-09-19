@@ -1,0 +1,102 @@
+.toast-region {
+  position: fixed;
+  bottom: var(--sp-5);
+  right: var(--sp-5);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: min(360px, calc(100vw - var(--sp-6)));
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  /* Floating chrome over arbitrary page content, so: real blur, near-opaque base
+     for legibility, and the coloured left edge lit from behind (below). */
+  background:
+    var(--glass-sheen),
+    var(--glass-bg-strong),
+    color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--border-thin) solid var(--glass-border-strong);
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-panel-raised);
+  pointer-events: auto;
+  animation: toast-in var(--dur-component) var(--ease-liquid);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The status edge spills its hue inward — cheap, and it makes each toast type
+   identifiable from peripheral vision without a large colour field. */
+.toast--info {
+  border-left-color: var(--info);
+  box-shadow:
+    var(--glass-panel-raised),
+    inset 14px 0 24px -18px rgba(34, 211, 238, 0.9);
+}
+.toast--success {
+  border-left-color: var(--success);
+  box-shadow:
+    var(--glass-panel-raised),
+    inset 14px 0 24px -18px rgba(52, 211, 153, 0.9);
+}
+.toast--error {
+  border-left-color: var(--danger);
+  box-shadow:
+    var(--glass-panel-raised),
+    inset 14px 0 24px -18px rgba(251, 113, 133, 0.9);
+}
+.toast__icon {
+  display: inline-flex;
+  margin-top: 1px;
+}
+.toast--info .toast__icon {
+  color: var(--info);
+}
+.toast--success .toast__icon {
+  color: var(--success);
+}
+.toast--error .toast__icon {
+  color: var(--danger);
+}
+.toast__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.toast__text strong {
+  font-size: var(--fs-support);
+  color: var(--text-primary);
+}
+.toast__text span {
+  font-size: var(--fs-meta);
+  color: var(--text-secondary);
+}
+.toast__close {
+  flex: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-micro) var(--ease-standard);
+}
+.toast__close:hover {
+  color: var(--text-primary);
+}

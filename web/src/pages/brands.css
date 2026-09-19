@@ -1,0 +1,24 @@
+.rag-columns { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; align-items: start; }
+.rag-panel, .rag-picker { border: 1px solid var(--border, #403647); border-radius: 14px; background: var(--surface, #15121d); padding: 24px; }
+.rag-panel h2 { margin: 0 0 14px; font-size: 20px; }
+.rag-panel h3 { font-size: 17px; }
+.rag-panel p, .rag-context p { margin: 10px 0 16px; line-height: 1.6; }
+.rag-panel form, .rag-workspace { display: grid; gap: 18px; }
+.rag-muted, .rag-document small, .rag-brand-button small { color: var(--text-muted, #aaa1b5); font-size: 13px; line-height: 1.6; }
+.rag-brand-button { display: grid; width: 100%; text-align: left; gap: 6px; padding: 14px; margin: 0 0 10px; border: 1px solid transparent; background: transparent; border-radius: 8px; color: inherit; cursor: pointer; }
+.rag-brand-button.is-selected { background: #a855f718; border-color: #a855f7; }
+.rag-sidebar form { margin-top: 26px; }
+.rag-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 14px; }
+.rag-document { display: flex; gap: 16px; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border, #403647); }
+.rag-document div { min-width: 0; overflow-wrap: anywhere; }
+.rag-document small { display: block; margin-top: 6px; }
+.rag-review { margin-top: 24px; }
+.rag-review pre, .rag-context pre { white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; font-size: 14px; line-height: 1.65; max-height: 350px; overflow: auto; padding: 16px; background: #09070e; border-radius: 8px; }
+.rag-context { margin-top: 20px; }
+.rag-context details { padding: 12px 0; border-top: 1px solid var(--border, #403647); }
+.rag-context summary { cursor: pointer; overflow-wrap: anywhere; }
+.rag-picker { margin-bottom: 24px; }
+.rag-panel [role=alert], .rag-picker [role=alert] { color: #ff9bac; }
+@media(max-width: 760px) { .rag-columns { grid-template-columns: 1fr; } .rag-panel, .rag-picker { padding: 18px; } }
+
+.rag-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin:1rem 0}.rag-form-grid label{display:grid;gap:.4rem}.rag-stats{display:flex;flex-wrap:wrap;gap:1.5rem;margin:1rem 0}.rag-table-wrap{overflow:auto}.rag-table-wrap table{width:100%;border-collapse:collapse}.rag-table-wrap td,.rag-table-wrap th{padding:.65rem;text-align:left;border-bottom:1px solid var(--border-subtle,#444)}.rag-panel{margin-bottom:1rem}.rag-panel pre{white-space:pre-wrap;overflow-wrap:anywhere}

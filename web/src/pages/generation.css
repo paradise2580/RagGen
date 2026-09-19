@@ -1,0 +1,134 @@
+/* ----------------------------- Status hero ----------------------------- */
+.gen-status {
+  position: relative;
+  overflow: hidden;
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-gradient);
+  box-shadow: var(--glass-panel);
+  padding: var(--sp-5);
+}
+/* While the pipeline is live the whole panel is backlit — the user is waiting on
+   this one surface, so it should be visibly the active thing on the page. */
+.gen-status--running {
+  background: var(--hero-glow), var(--surface-gradient);
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--glass-panel),
+    0 0 44px -14px rgba(168, 85, 247, 0.42);
+}
+.gen-status__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+.gen-status__headline {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.gen-status__stage {
+  font-size: var(--fs-card);
+  font-weight: var(--fw-semibold);
+}
+.gen-status__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+.gen-status__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+.gen-status__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.gen-status__pct {
+  font-size: 1.5rem;
+  font-weight: var(--fw-semibold);
+  min-width: 3.5ch;
+  text-align: right;
+}
+.live-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-meta);
+  color: var(--success);
+}
+.live-pip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px 0 var(--success);
+  animation: pulse-ring 1.6s var(--ease-standard) infinite;
+}
+
+.gen-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--sp-5);
+  align-items: start;
+}
+.gen-section-title {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-3);
+}
+
+/* Output preview */
+.output-primary {
+  width: 100%;
+}
+.output-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.output-placeholder {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border: var(--border-thin) dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+  color: var(--text-muted);
+  gap: var(--sp-2);
+  text-align: center;
+  padding: var(--sp-5);
+}
+.output-shimmer {
+  width: 60%;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+  position: relative;
+  overflow: hidden;
+}
+.output-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.55), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@media (max-width: 900px) {
+  .gen-grid {
+    grid-template-columns: 1fr;
+  }
+}

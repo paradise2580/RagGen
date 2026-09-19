@@ -1,0 +1,422 @@
+/* ===================== Shared app page layout helpers ================== */
+
+/* The page-level stack is section rhythm; --sm is group rhythm. Both point at the
+   tokens in layout.css so a page cannot invent a third gap. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap);
+}
+.stack--sm {
+  gap: var(--group-gap);
+}
+
+.grid-cards {
+  display: grid;
+  gap: var(--grid-gap);
+}
+.grid-stats {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.grid-products {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.grid-media {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+/* Video Library: exactly four per row so each card reads larger. */
+.grid-media-lg {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1000px) {
+  .grid-media-lg {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .grid-media-lg {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 460px) {
+  .grid-media-lg {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-title {
+  font-size: var(--fs-card);
+  margin-bottom: var(--sp-3);
+}
+
+/* Generic clickable list row */
+.row-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-gradient);
+  box-shadow:
+    var(--edge-light),
+    var(--shadow-1);
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+.row-link:hover {
+  border-color: var(--accent-line);
+  background: var(--surface-gradient-hover);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--shadow-2);
+}
+.row-link:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+.row-link__main {
+  flex: 1;
+  min-width: 0;
+}
+.row-link__title {
+  display: block;
+  font-size: var(--fs-support);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-link__sub {
+  display: block;
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+.row-link__thumb {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-inset);
+  box-shadow: var(--well-shadow);
+}
+/* Larger thumbnail + roomier row for the Generations list (shows the video's first frame). */
+.row-link__thumb--lg {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  border: var(--border-thin) solid var(--border-subtle);
+}
+.row-link__thumb--lg > * {
+  width: 100%;
+  height: 100%;
+}
+.row-link__thumb--lg > video,
+.row-link__thumb--lg > img {
+  object-fit: cover;
+}
+.row-link--media {
+  padding: var(--sp-4);
+}
+.row-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.row-item {
+  position: relative;
+}
+.row-item > .row-link {
+  /* Reserve space so the status badge never sits under the delete button. */
+  padding-right: calc(var(--sp-4) + 36px);
+}
+.row-item__delete {
+  position: absolute;
+  right: var(--sp-3);
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity var(--dur-micro) var(--ease-standard);
+}
+.row-item:hover .row-item__delete,
+.row-item:focus-within .row-item__delete {
+  opacity: 1;
+}
+@media (hover: none) {
+  .row-item__delete {
+    opacity: 1;
+  }
+}
+
+/* Definition list for metadata */
+.meta-list {
+  display: grid;
+  gap: var(--sp-3);
+}
+.meta-list__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  font-size: var(--fs-support);
+}
+.meta-list__row dt {
+  color: var(--text-muted);
+}
+.meta-list__row dd {
+  color: var(--text-primary);
+  text-align: right;
+  font-weight: var(--fw-medium);
+}
+
+/* Product grid card */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-gradient);
+  box-shadow: var(--glass-panel);
+  overflow: hidden;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-spring);
+}
+.product-card:hover {
+  border-color: var(--accent-line);
+  background: var(--surface-gradient-hover);
+  transform: translateY(-2px);
+  box-shadow:
+    var(--glass-panel-raised),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+.product-card:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+.product-card__body {
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.product-card__name {
+  font-size: var(--fs-support);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-card__sub {
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+.product-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--sp-2);
+}
+
+/* Dashboard composition */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--sp-5);
+  align-items: start;
+}
+/* --sp-5 is THE card padding across the app (.panel, .card--pad-md, .stat-card,
+   .wizard__panel). Neighbouring cards in one grid with different inner padding is the
+   other half of what read as weird spacing. */
+.panel {
+  background: var(--surface-gradient);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5);
+  box-shadow: var(--glass-panel);
+}
+.panel--accent {
+  background: var(--hero-glow), var(--surface-gradient);
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--glass-panel),
+    0 0 24px -8px rgba(168, 85, 247, 0.3);
+}
+
+/* Upload dropzone */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-7) var(--sp-5);
+  text-align: center;
+  border: var(--border-thick) dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  /* An empty well waiting to be filled — recessed, so dropping into it reads as
+     placing something *in* the app rather than on it. */
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+.dropzone:hover,
+.dropzone:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+/* Mid-drag the well lights up from inside — the clearest possible "let go here". */
+.dropzone.is-dragging {
+  border-color: var(--accent);
+  background: var(--accent-soft-strong);
+  box-shadow:
+    inset 0 0 24px -4px rgba(168, 85, 247, 0.3);
+}
+.dropzone__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  box-shadow:
+    var(--edge-light),
+    0 0 22px -7px rgba(168, 85, 247, 0.3);
+}
+.dropzone__title {
+  font-size: var(--fs-support);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
+}
+.dropzone__hint {
+  font-size: var(--fs-meta);
+  color: var(--text-muted);
+}
+
+/* ---------------------- Staged product-image tray ----------------------- */
+/* Photos uploaded in the Add Product dialog, before the product is created.
+   Auto-fill rather than a fixed column count so one image doesn't stretch to
+   full width and ten don't crush. */
+.staged-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--sp-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.staged-image {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: var(--border-thin) solid var(--border-subtle);
+  background: var(--surface-inset);
+  box-shadow:
+    var(--edge-light),
+    var(--edge-shade),
+    var(--shadow-1);
+}
+/* The first image is the generation start frame — label it, because that ordering
+   is load-bearing and invisible otherwise. */
+.staged-image__primary {
+  position: absolute;
+  z-index: 2;
+  left: var(--sp-1);
+  bottom: var(--sp-1);
+  padding: 2px 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 2px 10px -2px rgba(168, 85, 247, 0.75);
+}
+.staged-image__remove {
+  position: absolute;
+  z-index: 2;
+  top: var(--sp-1);
+  right: var(--sp-1);
+}
+/* Sits on top of a photo, so it needs its own glass rather than the ghost
+   IconButton's transparent fill, which would vanish on a light image. */
+.staged-image__remove .icon-btn {
+  background: rgba(20, 12, 40, 0.55);
+  color: #fff;
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+.staged-image__remove .icon-btn:hover:not(:disabled) {
+  background: rgba(190, 60, 85, 0.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+/* Skeleton list helpers */
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* Theme toggle group (settings) */
+.theme-toggle-group {
+  display: inline-flex;
+  gap: var(--sp-2);
+}
+.theme-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--control-h);
+  padding: 0 var(--sp-4);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--veil-hover);
+  box-shadow: var(--edge-light);
+  color: var(--text-secondary);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard);
+}
+.theme-option:hover {
+  color: var(--text-primary);
+  background: var(--veil-hover-strong);
+}
+.theme-option.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  box-shadow:
+    var(--edge-light),
+    0 0 20px -6px rgba(168, 85, 247, 0.3);
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

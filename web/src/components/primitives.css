@@ -1,0 +1,538 @@
+/* ------------------------------- Button -------------------------------- */
+.btn {
+  --btn-h: var(--control-h);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--btn-h);
+  padding: 0 var(--sp-4);
+  border: var(--border-thin) solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-support);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    border-color var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn--sm {
+  --btn-h: var(--control-h-sm);
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-label);
+}
+.btn--lg {
+  --btn-h: var(--control-h-lg);
+  padding: 0 var(--sp-5);
+  font-size: var(--fs-body);
+}
+.btn--block {
+  width: 100%;
+}
+.btn__content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.btn.is-loading .btn__content {
+  opacity: 0;
+}
+
+.btn--primary {
+  background: var(--accent-gradient);
+  background-size: 140% 140%;
+  background-position: 0% 50%;
+  color: var(--accent-contrast);
+  overflow: hidden;
+  /* Specular cap plus a single offset violet cast. That cast is what separates the
+     control from the canvas — the job a plain drop shadow does on a light theme. */
+  box-shadow:
+    0 8px 22px -8px rgba(168, 85, 247, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition:
+    background-position var(--dur-component) var(--ease-standard),
+    box-shadow var(--dur-micro) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard),
+    filter var(--dur-micro) var(--ease-standard);
+}
+.btn--primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  pointer-events: none;
+}
+.btn--primary:hover:not(:disabled) {
+  background-position: 100% 50%;
+  filter: brightness(1.08);
+  box-shadow:
+    0 12px 30px -8px rgba(168, 85, 247, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+.btn--primary:hover:not(:disabled)::after {
+  animation: sheen 0.9s var(--ease-standard);
+}
+.btn--primary:active:not(:disabled) {
+  filter: brightness(0.97);
+}
+
+/* The workhorse button, and the clearest small-scale statement of the glass
+   language: raised translucent slab, specular top edge, shaded bottom lip. No
+   backdrop-filter — buttons repeat freely inside tables and toolbars. */
+.btn--secondary {
+  background: var(--glass-bg-strong), var(--surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--glass-border-strong);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--edge-shade),
+    var(--shadow-1);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: var(--glass-bg-strong), var(--surface-hover);
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--edge-shade),
+    var(--shadow-2);
+}
+
+/* The inverse of secondary: pressed into the surface rather than raised out of
+   it, so the edge-light order flips (shade on top, catch-light on the bottom). */
+.btn--subtle {
+  background: var(--well-bg);
+  color: var(--text-secondary);
+  box-shadow:
+    var(--well-shadow),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+.btn--subtle:hover:not(:disabled) {
+  background: var(--veil-hover-strong);
+  color: var(--text-primary);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn--ghost:hover:not(:disabled) {
+  background: var(--veil-hover);
+  color: var(--text-primary);
+  box-shadow: var(--edge-light);
+}
+
+/* --danger is a light rose — it has to be, to work as TEXT on near-black — which
+   is far too bright to carry a white label as a fill. Deepen it toward crimson for
+   the solid variant so the conventional red-with-white-text still clears AA. */
+.btn--danger {
+  /* Mix ratios are set by contrast, not taste: white label text clears 4.5:1 at
+     both stops here (4.7:1 top, 5.6:1 bottom). Anything rosier than ~55% danger
+     drops the top stop below AA. */
+  background: linear-gradient(
+    168deg,
+    color-mix(in srgb, var(--danger) 55%, #7f1d3a),
+    color-mix(in srgb, var(--danger) 40%, #7f1d3a)
+  );
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 8px 22px -10px rgba(244, 63, 94, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+.btn--danger:hover:not(:disabled) {
+  filter: brightness(1.12);
+  box-shadow:
+    0 12px 28px -10px rgba(244, 63, 94, 0.78),
+    0 0 36px -14px rgba(251, 113, 133, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.btn__spinner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.9;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ------------------------------ IconButton ----------------------------- */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h);
+  height: var(--control-h);
+  border: var(--border-thin) solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  background: transparent;
+  transition:
+    background var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard),
+    border-color var(--dur-micro) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard);
+}
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.icon-btn--sm {
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+}
+.icon-btn--ghost:hover:not(:disabled),
+.icon-btn--subtle:hover:not(:disabled) {
+  background: var(--veil-hover);
+  color: var(--text-primary);
+  box-shadow: var(--edge-light);
+}
+.icon-btn--subtle {
+  background: var(--well-bg);
+  box-shadow:
+    var(--well-shadow),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+.icon-btn--secondary {
+  background: var(--glass-bg-strong), var(--surface-elevated);
+  border-color: var(--glass-border-strong);
+  color: var(--text-primary);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--edge-shade),
+    var(--shadow-1);
+}
+.icon-btn--secondary:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  box-shadow:
+    var(--edge-light-strong),
+    var(--edge-shade),
+    var(--shadow-2);
+}
+
+/* -------------------------------- Badge -------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  border: var(--border-thin) solid var(--border-subtle);
+  /* Translucent so pills sit correctly on glass chrome, cards and media
+     overlays alike — an opaque inset fill would read as a hole on all three. */
+  background: var(--veil-hover);
+  box-shadow: var(--edge-light);
+  color: var(--text-secondary);
+}
+.badge--accent {
+  background: linear-gradient(
+    135deg,
+    var(--accent-soft-strong),
+    color-mix(in srgb, var(--accent-soft) 35%, transparent)
+  );
+  color: var(--accent-hover);
+  border-color: var(--accent-line);
+}
+.badge--info {
+  background: linear-gradient(
+    135deg,
+    var(--info-soft),
+    color-mix(in srgb, var(--info-soft) 30%, transparent)
+  );
+  color: var(--info);
+  border-color: transparent;
+}
+.badge--success {
+  background: linear-gradient(
+    135deg,
+    var(--success-soft),
+    color-mix(in srgb, var(--success-soft) 30%, transparent)
+  );
+  color: var(--success);
+  border-color: transparent;
+}
+.badge--warning {
+  background: linear-gradient(
+    135deg,
+    var(--warning-soft),
+    color-mix(in srgb, var(--warning-soft) 30%, transparent)
+  );
+  color: var(--warning);
+  border-color: transparent;
+}
+.badge--danger {
+  background: linear-gradient(
+    135deg,
+    var(--danger-soft),
+    color-mix(in srgb, var(--danger-soft) 30%, transparent)
+  );
+  color: var(--danger);
+  border-color: transparent;
+}
+.badge--running {
+  background: linear-gradient(
+    135deg,
+    var(--accent-soft-strong),
+    color-mix(in srgb, var(--accent-soft) 35%, transparent)
+  );
+  color: var(--accent-hover);
+  border-color: transparent;
+}
+
+/* ----------------------------- StatusBadge ----------------------------- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.2rem 0.6rem 0.2rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-semibold);
+  border: var(--border-thin) solid var(--border-subtle);
+  background: var(--veil-hover);
+  box-shadow: var(--edge-light);
+  color: var(--text-secondary);
+}
+/* The dot is a lamp, not a swatch. currentColor bloom means every status hue
+   glows in its own colour for free — and it's the cheapest possible way to make a
+   dark UI feel lit. */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px 0 currentColor;
+  flex: none;
+}
+.status-dot--pulse {
+  animation: pulse-ring 1.6s var(--ease-standard) infinite;
+}
+/* Status pills carry a soft diagonal gradient tint of their own hue. */
+.status-badge--info {
+  color: var(--info);
+  border-color: var(--info-soft);
+  background: linear-gradient(
+    135deg,
+    var(--info-soft),
+    color-mix(in srgb, var(--info-soft) 30%, transparent)
+  );
+}
+.status-badge--running {
+  color: var(--accent-hover);
+  border-color: var(--accent-line);
+  background: linear-gradient(
+    135deg,
+    var(--accent-soft-strong),
+    color-mix(in srgb, var(--accent-soft) 35%, transparent)
+  );
+}
+.status-badge--success {
+  color: var(--success);
+  border-color: var(--success-soft);
+  background: linear-gradient(
+    135deg,
+    var(--success-soft),
+    color-mix(in srgb, var(--success-soft) 30%, transparent)
+  );
+}
+.status-badge--warning {
+  color: var(--warning);
+  border-color: var(--warning-soft);
+  background: linear-gradient(
+    135deg,
+    var(--warning-soft),
+    color-mix(in srgb, var(--warning-soft) 30%, transparent)
+  );
+}
+.status-badge--danger {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+  background: linear-gradient(
+    135deg,
+    var(--danger-soft),
+    color-mix(in srgb, var(--danger-soft) 30%, transparent)
+  );
+}
+
+/* -------------------------------- Card --------------------------------- */
+/* The app's most-repeated surface — /assets and /generations render dozens at
+   once — so it gets the no-blur recipe: a top-lit gradient plus the full edge
+   stack. At rest it reads as a solid slab of the same material as the chrome;
+   see tokens.css for why real backdrop-filter is withheld here. */
+.card {
+  background: var(--surface-gradient);
+  border: var(--border-thin) solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-panel);
+}
+.card--pad-none {
+  padding: 0;
+}
+.card--pad-sm {
+  padding: var(--sp-3);
+}
+.card--pad-md {
+  padding: var(--sp-5);
+}
+.card--pad-lg {
+  padding: var(--sp-6);
+}
+.card--interactive {
+  cursor: pointer;
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    background var(--dur-micro) var(--ease-standard),
+    transform var(--dur-component) var(--ease-spring),
+    box-shadow var(--dur-component) var(--ease-standard);
+}
+/* Lifting a card brightens its top edge and deepens its cast shadow — the two
+   cues that actually communicate "closer" on a dark ground. The violet rim
+   supplies the hover affordance that a colour change alone can't at this
+   contrast. */
+.card--interactive:hover {
+  border-color: var(--accent-line);
+  background: var(--surface-gradient-hover);
+  transform: translateY(-3px);
+  box-shadow:
+    var(--glass-panel-raised),
+    0 0 0 1px rgba(192, 132, 252, 0.28);
+}
+.card--interactive:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ------------------------------- Spinner ------------------------------- */
+.spinner {
+  display: inline-block;
+  border: 2.5px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+/* ------------------------------ Skeleton ------------------------------- */
+.skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+  border-radius: var(--radius-sm);
+}
+/* The sweep must be LIGHTER than the placeholder on a dark theme. Mixing toward
+   --surface-hover (the light-theme approach) barely separates from the base and
+   makes the loading state look frozen. */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.09),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+/* ------------------------------- Progress ------------------------------ */
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+}
+.progress {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  /* Milled channel: the fill has to look like it sits *in* a track, or the glow
+     below has nothing to read against. */
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-gradient);
+  /* Gently drift the accent gradient so an in-flight generation reads as alive. */
+  background-size: 200% 100%;
+  animation: progress-flow 2.6s linear infinite;
+  /* The only tight glow left in the system, and it earns it: an in-flight render is
+     the one thing on the page that should look genuinely energised, and the drifting
+     gradient alone does not read at 6px tall. */
+  box-shadow:
+    0 0 14px 0 rgba(168, 85, 247, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: width var(--dur-component) var(--ease-standard);
+}
+@keyframes progress-flow {
+  to {
+    background-position: 200% 0;
+  }
+}
+.progress--success .progress__fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--success) 70%, #0d9488),
+    var(--success)
+  );
+  box-shadow:
+    0 0 14px 0 rgba(52, 211, 153, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: none;
+}
+.progress--danger .progress__fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--danger) 70%, #9f1239),
+    var(--danger)
+  );
+  box-shadow:
+    0 0 14px 0 rgba(251, 113, 133, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: none;
+}
+.progress--indeterminate .progress__fill {
+  width: 40%;
+  animation: indeterminate 1.4s var(--ease-standard) infinite;
+}
+.progress__label {
+  font-size: var(--fs-meta);
+  color: var(--text-secondary);
+  min-width: 2.5ch;
+  text-align: right;
+}
